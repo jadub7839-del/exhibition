@@ -1,39 +1,44 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Zaiqa Mela — Desi Food Exhibition | Stall Booking</title>
+<meta name="description" content="Book your stall at Zaiqa Mela, Pakistan's largest desi food exhibition. 12–14 December 2025, Al-Hamra Grounds, Lahore.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<!-- Ambient background texture -->
-<div class="grain-overlay"></div>
+<div class="grain" aria-hidden="true"></div>
+<a href="#floorplan" class="skip-link">Skip to stall booking</a>
 
-<!-- ===================== NAVBAR ===================== -->
-<header class="navbar" id="navbar">
-  <div class="nav-inner">
+<!-- ===================== NAV ===================== -->
+<header class="nav" id="nav">
+  <div class="nav__inner">
     <a href="#top" class="brand">
-      <span class="brand-mark">ز</span>
-      <span class="brand-text">
+      <span class="brand__mark" aria-hidden="true">ز</span>
+      <span class="brand__text">
         <strong>Zaiqa Mela</strong>
         <em>Desi Food Exhibition</em>
       </span>
     </a>
-    <nav class="nav-links">
-      <a href="#about">About</a>
+
+    <nav class="nav__links" id="navLinks" aria-label="Main">
+      <a href="#about">Exhibition</a>
       <a href="#categories">Categories</a>
-      <a href="#floorplan">Stalls</a>
+      <a href="#floorplan">Stall Map</a>
       <a href="#schedule">Schedule</a>
       <a href="#facilities">Facilities</a>
       <a href="#rules">Guidelines</a>
       <a href="#contact">Contact</a>
     </nav>
-    <a href="#floorplan" class="btn btn-primary nav-cta">Book a Stall</a>
-    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+
+    <a href="#floorplan" class="btn btn--primary btn--sm nav__cta">Book a Stall</a>
+
+    <button class="nav__toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
       <span></span><span></span><span></span>
     </button>
   </div>
@@ -41,551 +46,532 @@
 
 <!-- ===================== HERO ===================== -->
 <section class="hero" id="top">
-  <div class="hero-bg">
-    <div class="spice-particle p1"></div>
-    <div class="spice-particle p2"></div>
-    <div class="spice-particle p3"></div>
-    <div class="spice-particle p4"></div>
-  </div>
-  <div class="hero-inner">
-    <div class="hero-badge">📍 Book Now &mdash; Limited Stalls Remaining</div>
-    <h1 class="hero-title">
-      <span class="line">Zaiqa</span>
-      <span class="line accent">Mela</span>
+  <div class="hero__glow" aria-hidden="true"></div>
+  <div class="hero__inner">
+    <p class="hero__eyebrow">12 – 14 December 2025 &nbsp;·&nbsp; Lahore</p>
+
+    <h1 class="hero__title">
+      <span>Zaiqa</span>
+      <span class="hero__title-accent">Mela</span>
     </h1>
-    <p class="hero-theme">"Where Every Street Has a Story to Taste" — A Celebration of Authentic Desi Cuisine</p>
 
-    <div class="hero-meta">
-      <div class="meta-chip">
-        <span class="meta-icon">📅</span>
-        <div><strong>12–14 December 2025</strong><small>Fri – Sun, 4 PM – 11 PM</small></div>
+    <p class="hero__theme">Where every street has a story to taste — a three-day celebration of authentic desi cuisine.</p>
+
+    <div class="hero__meta">
+      <div class="chip">
+        <span class="chip__label">Venue</span>
+        <span class="chip__value">Al-Hamra Open Air Grounds</span>
+        <span class="chip__sub">Gulberg, Lahore</span>
       </div>
-      <div class="meta-chip">
-        <span class="meta-icon">📍</span>
-        <div><strong>Al-Hamra Grounds</strong><small>Gulberg, Lahore</small></div>
+      <div class="chip">
+        <span class="chip__label">Daily timing</span>
+        <span class="chip__value">4:00 PM – 11:00 PM</span>
+        <span class="chip__sub">Exhibitor entry from 2:00 PM</span>
       </div>
-      <div class="meta-chip">
-        <span class="meta-icon">🏮</span>
-        <div><strong>120 Stalls</strong><small>Across 6 Themed Aisles</small></div>
+      <div class="chip">
+        <span class="chip__label">Layout</span>
+        <span class="chip__value">6 themed aisles</span>
+        <span class="chip__sub">Street food to heritage kitchens</span>
       </div>
     </div>
 
-    <div class="hero-actions">
-      <a href="#floorplan" class="btn btn-primary btn-lg">Explore Stall Map →</a>
-      <a href="#about" class="btn btn-ghost btn-lg">View Exhibition Details</a>
+    <div class="hero__actions">
+      <a href="#floorplan" class="btn btn--primary btn--lg">View stall map</a>
+      <a href="#about" class="btn btn--outline btn--lg">Exhibition details</a>
     </div>
 
-    <div class="hero-stats">
-      <div class="stat"><span class="stat-num" data-count="120">0</span><span class="stat-label">Total Stalls</span></div>
-      <div class="stat"><span class="stat-num" data-count="68">0</span><span class="stat-label">Booked</span></div>
-      <div class="stat"><span class="stat-num" data-count="52">0</span><span class="stat-label">Available</span></div>
-      <div class="stat"><span class="stat-num" data-count="15000">0</span><span class="stat-label">Expected Visitors</span></div>
-    </div>
+    <dl class="hero__stats">
+      <div class="stat"><dd class="stat__num" id="statTotal">—</dd><dt class="stat__label">Total stalls</dt></div>
+      <div class="stat"><dd class="stat__num" id="statBooked">—</dd><dt class="stat__label">Booked</dt></div>
+      <div class="stat"><dd class="stat__num" id="statAvailable">—</dd><dt class="stat__label">Available</dt></div>
+      <div class="stat"><dd class="stat__num" id="statVisitors">—</dd><dt class="stat__label">Expected visitors</dt></div>
+    </dl>
   </div>
-  <div class="hero-scroll-cue"><span></span>Scroll to explore</div>
 </section>
 
-<!-- ===================== ABOUT / EXHIBITION INFO ===================== -->
-<section class="section about" id="about">
-  <div class="section-inner">
-    <div class="eyebrow">The Exhibition</div>
-    <h2 class="section-title">Three Days of Pure Desi Flavour</h2>
-    <p class="section-lede">
-      Zaiqa Mela brings together Pakistan's finest home chefs, street-food legends, and heritage restaurants
-      under one roof (well, one open-air ground) — for a weekend built entirely around the art of desi cooking.
-      From sizzling BBQ counters to century-old halwa recipes, every stall tells a story.
-    </p>
+<!-- ===================== ABOUT ===================== -->
+<section class="section section--alt" id="about">
+  <div class="wrap">
+    <header class="section__head">
+      <p class="eyebrow">The exhibition</p>
+      <h2 class="section__title">Three days built entirely around desi food</h2>
+      <p class="section__lede">Zaiqa Mela brings together Pakistan's home chefs, street-food institutions and heritage restaurants under one open sky — from sizzling BBQ counters to century-old halwa recipes.</p>
+    </header>
 
-    <div class="info-grid">
-      <div class="info-card">
-        <div class="info-icon">🗓️</div>
-        <h3>Event Dates</h3>
-        <p>12 – 14 December 2025<br><span class="muted">3 Days · Fri to Sun</span></p>
-      </div>
-      <div class="info-card">
-        <div class="info-icon">⏰</div>
-        <h3>Timings</h3>
-        <p>4:00 PM – 11:00 PM<br><span class="muted">Exhibitor entry from 2:00 PM</span></p>
-      </div>
-      <div class="info-card">
-        <div class="info-icon">🏟️</div>
+    <div class="grid grid--3">
+      <article class="card card--info">
+        <h3>Event dates</h3>
+        <p class="card__value">12 – 14 December 2025</p>
+        <p class="card__sub">Friday to Sunday · 3 days</p>
+      </article>
+      <article class="card card--info">
+        <h3>Daily timings</h3>
+        <p class="card__value">4:00 PM – 11:00 PM</p>
+        <p class="card__sub">Exhibitor access opens 2:00 PM</p>
+      </article>
+      <article class="card card--info">
         <h3>Venue</h3>
-        <p>Al-Hamra Open Air Grounds<br><span class="muted">Gulberg, Lahore</span></p>
-      </div>
-      <div class="info-card">
-        <div class="info-icon">🎪</div>
-        <h3>Layout</h3>
-        <p>6 Themed Aisles<br><span class="muted">120 stalls · 4 categories</span></p>
-      </div>
-      <div class="info-card">
-        <div class="info-icon">👥</div>
-        <h3>Footfall</h3>
-        <p>15,000+ Expected<br><span class="muted">Families, foodies & press</span></p>
-      </div>
-      <div class="info-card">
-        <div class="info-icon">🎟️</div>
-        <h3>Entry</h3>
-        <p>PKR 200 / visitor<br><span class="muted">Free for exhibitor staff</span></p>
-      </div>
+        <p class="card__value">Al-Hamra Open Air Grounds</p>
+        <p class="card__sub">Gulberg III, Lahore</p>
+      </article>
+      <article class="card card--info">
+        <h3>Expected footfall</h3>
+        <p class="card__value">15,000+ visitors</p>
+        <p class="card__sub">Families, food media &amp; press</p>
+      </article>
+      <article class="card card--info">
+        <h3>Visitor entry</h3>
+        <p class="card__value">PKR 200 per person</p>
+        <p class="card__sub">Free for registered exhibitor staff</p>
+      </article>
+      <article class="card card--info">
+        <h3>Stall inventory</h3>
+        <p class="card__value" id="aboutStallCount">— stalls</p>
+        <p class="card__sub">Across 6 themed aisles</p>
+      </article>
     </div>
   </div>
 </section>
 
-<!-- ===================== STALL CATEGORIES ===================== -->
-<section class="section categories" id="categories">
-  <div class="section-inner">
-    <div class="eyebrow">Stall Categories</div>
-    <h2 class="section-title">Choose Your Culinary Corner</h2>
-    <p class="section-lede">Every category is priced per 3-day exhibition slot and includes aisle placement suited to the food type.</p>
+<!-- ===================== CATEGORIES ===================== -->
+<section class="section" id="categories">
+  <div class="wrap">
+    <header class="section__head">
+      <p class="eyebrow">Stall categories</p>
+      <h2 class="section__title">Six aisles, six kinds of kitchen</h2>
+      <p class="section__lede">Each price covers the full three-day exhibition slot, including aisle placement suited to the food type.</p>
+    </header>
 
-    <div class="cat-grid">
-      <div class="cat-card" data-cat="street">
-        <div class="cat-top"><span class="cat-emoji">🌭</span><span class="cat-price">PKR 45,000</span></div>
-        <h3>Street Food</h3>
-        <p>Golgappay, chaat, rolls, fries — high footfall, compact 6×6 ft stalls near main entrance.</p>
-        <div class="cat-tags"><span>6×6 ft</span><span>28 stalls</span></div>
+    <div class="grid grid--3" id="categoryGrid"><!-- rendered by script.js --></div>
+  </div>
+</section>
+
+<!-- ===================== FLOOR PLAN ===================== -->
+<section class="section section--alt" id="floorplan">
+  <div class="wrap">
+    <header class="section__head">
+      <p class="eyebrow">Step 1 — stall selection</p>
+      <h2 class="section__title">Pick your spot on the mela floor</h2>
+      <p class="section__lede">Select any available stall to see its size, aisle and price. Booked stalls are shown for reference and can't be selected.</p>
+    </header>
+
+    <div class="floor__toolbar">
+      <ul class="legend">
+        <li><span class="swatch swatch--available"></span>Available</li>
+        <li><span class="swatch swatch--booked"></span>Booked</li>
+        <li><span class="swatch swatch--selected"></span>Your selection</li>
+      </ul>
+      <div class="filters" role="group" aria-label="Filter stalls by category">
+        <button class="filter is-active" data-filter="all" aria-pressed="true">All aisles</button>
+        <button class="filter" data-filter="street" aria-pressed="false">Street food</button>
+        <button class="filter" data-filter="bbq" aria-pressed="false">BBQ &amp; grill</button>
+        <button class="filter" data-filter="sweets" aria-pressed="false">Desserts</button>
+        <button class="filter" data-filter="beverage" aria-pressed="false">Beverages</button>
+        <button class="filter" data-filter="heritage" aria-pressed="false">Heritage</button>
+        <button class="filter" data-filter="bakery" aria-pressed="false">Bakery</button>
       </div>
-      <div class="cat-card" data-cat="bbq">
-        <div class="cat-top"><span class="cat-emoji">🍢</span><span class="cat-price">PKR 65,000</span></div>
-        <h3>BBQ & Grill</h3>
-        <p>Seekh kebab, tikka, malai boti counters with dedicated ventilation & gas points.</p>
-        <div class="cat-tags"><span>8×8 ft</span><span>22 stalls</span></div>
-      </div>
-      <div class="cat-card" data-cat="sweets">
-        <div class="cat-top"><span class="cat-emoji">🍮</span><span class="cat-price">PKR 40,000</span></div>
-        <h3>Desserts & Mithai</h3>
-        <p>Kheer, halwa, jalebi, kulfi — chilled storage access included for perishables.</p>
-        <div class="cat-tags"><span>6×6 ft</span><span>24 stalls</span></div>
-      </div>
-      <div class="cat-card" data-cat="beverage">
-        <div class="cat-top"><span class="cat-emoji">🥤</span><span class="cat-price">PKR 30,000</span></div>
-        <h3>Beverages</h3>
-        <p>Lassi, doodh soda, kashmiri chai, fresh juices — compact counters across all aisles.</p>
-        <div class="cat-tags"><span>4×6 ft</span><span>20 stalls</span></div>
-      </div>
-      <div class="cat-card" data-cat="heritage">
-        <div class="cat-top"><span class="cat-emoji">🍛</span><span class="cat-price">PKR 80,000</span></div>
-        <h3>Heritage Restaurants</h3>
-        <p>Full sit-down style stalls for established brands — biryani, karahi, nihari specialists.</p>
-        <div class="cat-tags"><span>10×10 ft</span><span>16 stalls</span></div>
-      </div>
-      <div class="cat-card" data-cat="bakery">
-        <div class="cat-top"><span class="cat-emoji">🥐</span><span class="cat-price">PKR 35,000</span></div>
-        <h3>Bakery & Confectionery</h3>
-        <p>Naan-khatai, cakes, rusk, artisan breads — display-focused stall design.</p>
-        <div class="cat-tags"><span>6×6 ft</span><span>10 stalls</span></div>
-      </div>
+    </div>
+
+    <div class="floor">
+      <p class="floor__marker">Main entrance</p>
+      <div id="floorGrid"><!-- rendered by script.js --></div>
+      <p class="floor__marker floor__marker--exit">Exit &amp; parking</p>
     </div>
   </div>
 </section>
 
-<!-- ===================== FLOOR PLAN / STALL BOOKING ===================== -->
-<section class="section floorplan-section" id="floorplan">
-  <div class="section-inner">
-    <div class="eyebrow">Stall Booking</div>
-    <h2 class="section-title">Pick Your Spot on the Mela Floor</h2>
-    <p class="section-lede">Tap any available stall to view its details. Selected stall stays highlighted until you confirm your booking.</p>
+<!-- Stall detail dialog -->
+<div class="modal" id="stallModal" role="dialog" aria-modal="true" aria-labelledby="mStallNo" hidden>
+  <div class="modal__card" role="document">
+    <button class="modal__close" id="modalClose" aria-label="Close">&times;</button>
+    <p class="tag" id="mCategory">Street food</p>
+    <h3 class="modal__title" id="mStallNo">Stall A-01</h3>
+    <dl class="specs">
+      <div><dt>Stall size</dt><dd id="mSize">6 × 6 ft</dd></div>
+      <div><dt>Aisle</dt><dd id="mAisle">Aisle A</dd></div>
+      <div><dt>Three-day price</dt><dd id="mPrice">PKR 45,000</dd></div>
+    </dl>
+    <button class="btn btn--primary btn--block" id="mSelect">Select this stall</button>
+  </div>
+</div>
 
-    <div class="legend">
-      <div class="legend-item"><span class="dot dot-available"></span> Available</div>
-      <div class="legend-item"><span class="dot dot-booked"></span> Booked</div>
-      <div class="legend-item"><span class="dot dot-selected"></span> Selected</div>
-      <div class="legend-filters">
-        <button class="filter-chip active" data-filter="all">All</button>
-        <button class="filter-chip" data-filter="street">Street Food</button>
-        <button class="filter-chip" data-filter="bbq">BBQ & Grill</button>
-        <button class="filter-chip" data-filter="sweets">Desserts</button>
-        <button class="filter-chip" data-filter="beverage">Beverages</button>
-        <button class="filter-chip" data-filter="heritage">Heritage</button>
-        <button class="filter-chip" data-filter="bakery">Bakery</button>
-      </div>
-    </div>
+<!-- ===================== BOOKING ===================== -->
+<section class="section" id="booking">
+  <div class="wrap wrap--narrow">
+    <header class="section__head">
+      <p class="eyebrow">Exhibitor booking</p>
+      <h2 class="section__title">Complete your stall booking</h2>
+    </header>
 
-    <div class="floor-wrap">
-      <div class="floor-entrance">MAIN ENTRANCE ▾</div>
-      <div class="floor-grid" id="floorGrid"><!-- JS injected --></div>
-      <div class="floor-entrance floor-exit">EXIT / PARKING ▾</div>
-    </div>
+    <ol class="steps" id="steps">
+      <li class="step is-active" data-step="1"><span class="step__num">1</span><span class="step__label">Stall</span></li>
+      <li class="step" data-step="2"><span class="step__num">2</span><span class="step__label">Your details</span></li>
+      <li class="step" data-step="3"><span class="step__num">3</span><span class="step__label">Payment</span></li>
+      <li class="step" data-step="4"><span class="step__num">4</span><span class="step__label">Review</span></li>
+      <li class="step" data-step="5"><span class="step__num">5</span><span class="step__label">Confirmed</span></li>
+    </ol>
 
-    <!-- Stall detail popover -->
-    <div class="stall-detail" id="stallDetail">
-      <div class="stall-detail-inner">
-        <button class="detail-close" id="detailClose">✕</button>
-        <div class="detail-icon" id="detailIcon">🌭</div>
-        <div class="detail-body">
-          <span class="detail-cat" id="detailCat">Street Food</span>
-          <h3 id="detailNumber">Stall A-01</h3>
-          <div class="detail-specs">
-            <div><small>Size</small><strong id="detailSize">6×6 ft</strong></div>
-            <div><small>Aisle</small><strong id="detailAisle">Aisle A</strong></div>
-            <div><small>Price</small><strong id="detailPrice">PKR 45,000</strong></div>
-          </div>
-          <button class="btn btn-primary" id="selectStallBtn">Select This Stall</button>
+    <!-- ---------- PANEL 1 ---------- -->
+    <div class="panel" data-panel="1">
+      <div class="card card--panel">
+        <div class="empty" id="panelEmpty">
+          <p class="empty__title">No stall selected yet</p>
+          <p class="empty__text">Choose an available stall from the map above to start your booking.</p>
+          <a href="#floorplan" class="btn btn--outline">Go to stall map</a>
         </div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<!-- ===================== EXHIBITOR REGISTRATION / BOOKING FORM ===================== -->
-<section class="section booking-section" id="booking">
-  <div class="section-inner">
-    <div class="eyebrow">Exhibitor Registration</div>
-    <h2 class="section-title">Complete Your Stall Booking</h2>
-
-    <div class="booking-layout">
-      <!-- Stepper -->
-      <div class="stepper" id="stepper">
-        <div class="step active" data-step="1"><span class="step-num">1</span><span>Selected Stall</span></div>
-        <div class="step-line"></div>
-        <div class="step" data-step="2"><span class="step-num">2</span><span>Exhibitor Details</span></div>
-        <div class="step-line"></div>
-        <div class="step" data-step="3"><span class="step-num">3</span><span>Review & Confirm</span></div>
-        <div class="step-line"></div>
-        <div class="step" data-step="4"><span class="step-num">4</span><span>Confirmation</span></div>
-      </div>
-
-      <!-- STEP 1: Selected stall summary -->
-      <div class="booking-panel" data-panel="1">
-        <div class="selected-stall-card" id="selectedStallCard">
-          <div class="empty-selection" id="emptySelection">
-            <span class="empty-icon">🏮</span>
-            <h3>No Stall Selected Yet</h3>
-            <p>Head to the floor plan above and tap an available stall to begin your booking.</p>
-            <a href="#floorplan" class="btn btn-ghost">Go to Stall Map</a>
-          </div>
-          <div class="filled-selection" id="filledSelection" style="display:none;">
-            <div class="filled-icon" id="filledIcon">🌭</div>
-            <div class="filled-info">
-              <span class="detail-cat" id="filledCat">Street Food</span>
-              <h3 id="filledNumber">Stall A-01</h3>
-              <div class="detail-specs">
-                <div><small>Size</small><strong id="filledSize">6×6 ft</strong></div>
-                <div><small>Aisle</small><strong id="filledAisle">Aisle A</strong></div>
-                <div><small>Price</small><strong id="filledPrice">PKR 45,000</strong></div>
-              </div>
+        <div class="picked" id="panelPicked" hidden>
+          <div class="picked__head">
+            <div>
+              <p class="tag" id="pCategory">Street food</p>
+              <h3 class="picked__title" id="pStallNo">Stall A-01</h3>
             </div>
-            <button class="btn-text" id="changeStallBtn">Change Stall</button>
+            <button type="button" class="link" id="changeStall">Change stall</button>
           </div>
-        </div>
-        <div class="panel-actions">
-          <button class="btn btn-primary" id="toStep2" disabled>Continue to Exhibitor Details →</button>
+          <dl class="specs specs--row">
+            <div><dt>Stall size</dt><dd id="pSize">6 × 6 ft</dd></div>
+            <div><dt>Aisle</dt><dd id="pAisle">Aisle A</dd></div>
+            <div><dt>Three-day price</dt><dd id="pPrice">PKR 45,000</dd></div>
+          </dl>
         </div>
       </div>
 
-      <!-- STEP 2: Form -->
-      <div class="booking-panel" data-panel="2" style="display:none;">
-        <form id="bookingForm" novalidate>
-          <div class="form-section">
-            <h4>Exhibitor Information</h4>
-            <div class="form-grid">
-              <div class="field">
-                <label for="companyName">Exhibitor / Company Name <em>*</em></label>
-                <input type="text" id="companyName" name="companyName" placeholder="e.g. Lahori Zaiqa Foods" required>
-                <span class="error-msg"></span>
-              </div>
-              <div class="field">
-                <label for="contactPerson">Contact Person <em>*</em></label>
-                <input type="text" id="contactPerson" name="contactPerson" placeholder="Full name" required>
-                <span class="error-msg"></span>
-              </div>
-              <div class="field">
-                <label for="email">Email Address <em>*</em></label>
-                <input type="email" id="email" name="email" placeholder="you@example.com" required>
-                <span class="error-msg"></span>
-              </div>
-              <div class="field">
-                <label for="phone">Phone Number <em>*</em></label>
-                <input type="tel" id="phone" name="phone" placeholder="03XX-XXXXXXX" required>
-                <span class="error-msg"></span>
-              </div>
-              <div class="field">
-                <label for="businessCategory">Business / Food Category <em>*</em></label>
-                <select id="businessCategory" name="businessCategory" required>
-                  <option value="">Select category</option>
-                  <option value="street">Street Food</option>
-                  <option value="bbq">BBQ & Grill</option>
-                  <option value="sweets">Desserts & Mithai</option>
-                  <option value="beverage">Beverages</option>
-                  <option value="heritage">Heritage Restaurant</option>
-                  <option value="bakery">Bakery & Confectionery</option>
-                </select>
-                <span class="error-msg"></span>
-              </div>
-              <div class="field">
-                <label for="repCount">Number of Representatives <em>*</em></label>
-                <input type="number" id="repCount" name="repCount" min="1" max="10" placeholder="e.g. 3" required>
-                <span class="error-msg"></span>
-              </div>
-            </div>
+      <div class="panel__actions panel__actions--end">
+        <button type="button" class="btn btn--primary" id="go2" disabled>Continue to your details</button>
+      </div>
+    </div>
+
+    <!-- ---------- PANEL 2 ---------- -->
+    <div class="panel" data-panel="2" hidden>
+      <form id="detailsForm" novalidate>
+        <div class="card card--panel">
+          <h3 class="panel__title">Your details</h3>
+          <p class="panel__hint">These details appear on your exhibitor pass and booking invoice.</p>
+
+          <div class="field">
+            <label for="fullName">Full name <span class="req">*</span></label>
+            <input type="text" id="fullName" name="fullName" autocomplete="name" placeholder="As printed on your CNIC">
+            <p class="err" data-err="fullName"></p>
           </div>
 
-          <div class="form-section">
-            <h4>Stall Requirements</h4>
+          <div class="field-row">
             <div class="field">
-              <label for="stallType">Preferred Stall Type <em>*</em></label>
-              <select id="stallType" name="stallType" required>
-                <option value="">Select stall type</option>
-                <option value="standard">Standard Counter</option>
-                <option value="grill">Grill / Open-Fire Counter</option>
-                <option value="sitdown">Sit-down / Extended Stall</option>
-                <option value="kiosk">Compact Kiosk</option>
-              </select>
-              <span class="error-msg"></span>
+              <label for="cnic">CNIC number <span class="req">*</span></label>
+              <input type="text" id="cnic" name="cnic" inputmode="numeric" maxlength="15" placeholder="35202-1234567-1">
+              <p class="err" data-err="cnic"></p>
             </div>
-
-            <label class="group-label">Additional Facilities Required</label>
-            <div class="checkbox-grid">
-              <label class="checkbox-card">
-                <input type="checkbox" name="facility" value="electricity" data-price="3000">
-                <span class="cb-box"></span>
-                <span class="cb-text"><strong>Electricity Connection</strong><small>+PKR 3,000</small></span>
-              </label>
-              <label class="checkbox-card">
-                <input type="checkbox" name="facility" value="table" data-price="1000">
-                <span class="cb-box"></span>
-                <span class="cb-text"><strong>Extra Table</strong><small>+PKR 1,000</small></span>
-              </label>
-              <label class="checkbox-card">
-                <input type="checkbox" name="facility" value="chairs" data-price="500">
-                <span class="cb-box"></span>
-                <span class="cb-text"><strong>Extra Chairs (Set of 4)</strong><small>+PKR 500</small></span>
-              </label>
-              <label class="checkbox-card">
-                <input type="checkbox" name="facility" value="branding" data-price="4000">
-                <span class="cb-box"></span>
-                <span class="cb-text"><strong>Branding / Display Backdrop</strong><small>+PKR 4,000</small></span>
-              </label>
-              <label class="checkbox-card">
-                <input type="checkbox" name="facility" value="gas" data-price="2500">
-                <span class="cb-box"></span>
-                <span class="cb-text"><strong>Gas Cylinder Point</strong><small>+PKR 2,500</small></span>
-              </label>
-              <label class="checkbox-card">
-                <input type="checkbox" name="facility" value="storage" data-price="2000">
-                <span class="cb-box"></span>
-                <span class="cb-text"><strong>Cold Storage Access</strong><small>+PKR 2,000</small></span>
-              </label>
-            </div>
-
             <div class="field">
-              <label for="notes">Additional Notes <span class="optional">(optional)</span></label>
-              <textarea id="notes" name="notes" rows="3" placeholder="Any special requirements..."></textarea>
+              <label for="mobile">Mobile number <span class="req">*</span></label>
+              <input type="tel" id="mobile" name="mobile" inputmode="numeric" maxlength="12" autocomplete="tel" placeholder="0300-1234567">
+              <p class="err" data-err="mobile"></p>
             </div>
           </div>
 
-          <div class="panel-actions split">
-            <button type="button" class="btn btn-ghost" id="backTo1">← Back</button>
-            <button type="button" class="btn btn-primary" id="toStep3">Review Booking →</button>
+          <div class="field">
+            <label for="email">Email address <span class="req">*</span></label>
+            <input type="email" id="email" name="email" autocomplete="email" placeholder="you@example.com">
+            <p class="err" data-err="email"></p>
           </div>
-        </form>
+
+          <div class="field">
+            <label for="address">Complete address <span class="req">*</span></label>
+            <textarea id="address" name="address" rows="3" autocomplete="street-address" placeholder="House / shop number, street, area"></textarea>
+            <p class="err" data-err="address"></p>
+          </div>
+
+          <div class="field">
+            <label for="city">City <span class="req">*</span></label>
+            <input type="text" id="city" name="city" autocomplete="address-level2" placeholder="e.g. Lahore">
+            <p class="err" data-err="city"></p>
+          </div>
+
+          <div class="field">
+            <label for="stallLocked">Selected stall</label>
+            <input type="text" id="stallLocked" readonly tabindex="-1" aria-readonly="true" value="—">
+            <p class="hint">Locked to your selection. Use "Change stall" on the previous step to pick a different one.</p>
+          </div>
+
+          <div class="field">
+            <label for="notes">Additional notes <span class="opt">Optional</span></label>
+            <textarea id="notes" name="notes" rows="3" maxlength="400" placeholder="Anything the organisers should know — special equipment, accessibility, setup timing."></textarea>
+            <p class="hint"><span id="notesCount">0</span> / 400</p>
+          </div>
+        </div>
+
+        <div class="panel__actions">
+          <button type="button" class="btn btn--outline" data-back="1">Back</button>
+          <button type="button" class="btn btn--primary" id="go3">Continue to payment</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ---------- PANEL 3 ---------- -->
+    <div class="panel" data-panel="3" hidden>
+      <div class="card card--panel">
+        <h3 class="panel__title">Payment</h3>
+        <p class="panel__hint">Your stall is held for 48 hours from booking. Payment confirms the reservation.</p>
+
+        <div class="summary">
+          <div class="summary__row">
+            <span id="payStallLabel">Stall — three-day slot</span>
+            <span class="mono" id="payBase">PKR 0</span>
+          </div>
+          <div class="summary__row">
+            <span>Service &amp; processing charge <span class="summary__note">5%</span></span>
+            <span class="mono" id="payFee">PKR 0</span>
+          </div>
+          <div class="summary__row summary__row--total">
+            <span>Total payable</span>
+            <span class="mono" id="payTotal">PKR 0</span>
+          </div>
+        </div>
+
+        <fieldset class="field fieldset">
+          <legend>Payment method <span class="req">*</span></legend>
+          <div class="methods" id="methods">
+            <label class="method">
+              <input type="radio" name="method" value="bank">
+              <span class="method__body"><strong>Bank transfer</strong><small>Meezan Bank · reference required</small></span>
+            </label>
+            <label class="method">
+              <input type="radio" name="method" value="jazzcash">
+              <span class="method__body"><strong>JazzCash</strong><small>Mobile wallet · reference required</small></span>
+            </label>
+            <label class="method">
+              <input type="radio" name="method" value="easypaisa">
+              <span class="method__body"><strong>EasyPaisa</strong><small>Mobile wallet · reference required</small></span>
+            </label>
+            <label class="method">
+              <input type="radio" name="method" value="card">
+              <span class="method__body"><strong>Credit / debit card</strong><small>Secure gateway at checkout</small></span>
+            </label>
+            <label class="method">
+              <input type="radio" name="method" value="cash">
+              <span class="method__body"><strong>Cash at exhibition office</strong><small>Pay within 48 hours</small></span>
+            </label>
+          </div>
+          <p class="err" data-err="method"></p>
+        </fieldset>
+
+        <div class="payinfo" id="payInfo" hidden>
+          <p class="payinfo__title" id="payInfoTitle">Transfer details</p>
+          <dl class="payinfo__list" id="payInfoList"></dl>
+        </div>
+
+        <div class="field" id="refField" hidden>
+          <label for="txnRef">Transaction / payment reference <span class="req">*</span></label>
+          <input type="text" id="txnRef" name="txnRef" maxlength="30" placeholder="e.g. TRX-90881245">
+          <p class="hint">Enter the reference number shown on your transfer receipt.</p>
+          <p class="err" data-err="txnRef"></p>
+        </div>
       </div>
 
-      <!-- STEP 3: Review -->
-      <div class="booking-panel" data-panel="3" style="display:none;">
-        <div class="review-card">
-          <h4>Stall Summary</h4>
-          <div class="review-row"><span>Stall Number</span><strong id="rvStall">—</strong></div>
-          <div class="review-row"><span>Category</span><strong id="rvCat">—</strong></div>
-          <div class="review-row"><span>Size</span><strong id="rvSize">—</strong></div>
-          <div class="review-row"><span>Base Price</span><strong id="rvBasePrice">—</strong></div>
+      <div class="panel__actions">
+        <button type="button" class="btn btn--outline" data-back="2">Back</button>
+        <button type="button" class="btn btn--primary" id="go4">Review booking</button>
+      </div>
+    </div>
+
+    <!-- ---------- PANEL 4 ---------- -->
+    <div class="panel" data-panel="4" hidden>
+      <div class="card card--panel">
+        <div class="review__head">
+          <h3 class="panel__title">Review your booking</h3>
+          <button type="button" class="link" data-back="2">Edit details</button>
         </div>
-        <div class="review-card">
-          <h4>Exhibitor Details</h4>
-          <div class="review-row"><span>Company</span><strong id="rvCompany">—</strong></div>
-          <div class="review-row"><span>Contact Person</span><strong id="rvContact">—</strong></div>
-          <div class="review-row"><span>Email</span><strong id="rvEmail">—</strong></div>
-          <div class="review-row"><span>Phone</span><strong id="rvPhone">—</strong></div>
-          <div class="review-row"><span>Representatives</span><strong id="rvReps">—</strong></div>
-          <div class="review-row"><span>Stall Type</span><strong id="rvStallType">—</strong></div>
+
+        <h4 class="review__group">Stall</h4>
+        <dl class="review">
+          <div><dt>Stall number</dt><dd id="rStall">—</dd></div>
+          <div><dt>Category</dt><dd id="rCategory">—</dd></div>
+          <div><dt>Size</dt><dd id="rSize">—</dd></div>
+          <div><dt>Aisle</dt><dd id="rAisle">—</dd></div>
+        </dl>
+
+        <h4 class="review__group">Exhibitor</h4>
+        <dl class="review">
+          <div><dt>Full name</dt><dd id="rName">—</dd></div>
+          <div><dt>CNIC</dt><dd id="rCnic">—</dd></div>
+          <div><dt>Mobile</dt><dd id="rMobile">—</dd></div>
+          <div><dt>Email</dt><dd id="rEmail">—</dd></div>
+          <div><dt>Address</dt><dd id="rAddress">—</dd></div>
+          <div><dt>City</dt><dd id="rCity">—</dd></div>
+          <div id="rNotesRow" hidden><dt>Notes</dt><dd id="rNotes">—</dd></div>
+        </dl>
+
+        <h4 class="review__group">Payment</h4>
+        <dl class="review">
+          <div><dt>Method</dt><dd id="rMethod">—</dd></div>
+          <div id="rRefRow" hidden><dt>Reference</dt><dd id="rRef">—</dd></div>
+        </dl>
+
+        <div class="summary summary--flush">
+          <div class="summary__row"><span>Stall price</span><span class="mono" id="rBase">PKR 0</span></div>
+          <div class="summary__row"><span>Service &amp; processing charge</span><span class="mono" id="rFee">PKR 0</span></div>
+          <div class="summary__row summary__row--total"><span>Total payable</span><span class="mono" id="rTotal">PKR 0</span></div>
         </div>
-        <div class="review-card">
-          <h4>Additional Facilities</h4>
-          <div id="rvFacilities" class="review-facilities"><span class="muted">None selected</span></div>
-        </div>
-        <div class="review-total">
-          <span>Total Amount Payable</span>
-          <strong id="rvTotal">PKR 0</strong>
-        </div>
-        <label class="checkbox-card agree-card">
-          <input type="checkbox" id="agreeTerms">
-          <span class="cb-box"></span>
-          <span class="cb-text"><strong>I agree to the Exhibition Rules & Guidelines</strong><small>and confirm all details above are accurate</small></span>
+
+        <label class="agree">
+          <input type="checkbox" id="agree">
+          <span>I confirm the details above are correct and I accept the exhibition rules &amp; guidelines.</span>
         </label>
-        <span class="error-msg" id="agreeError"></span>
-        <div class="panel-actions split">
-          <button type="button" class="btn btn-ghost" id="backTo2">← Back</button>
-          <button type="button" class="btn btn-primary btn-confirm" id="confirmBooking">Confirm Booking ✓</button>
+        <p class="err" data-err="agree"></p>
+      </div>
+
+      <div class="panel__actions">
+        <button type="button" class="btn btn--outline" data-back="3">Back</button>
+        <button type="button" class="btn btn--confirm" id="confirmBtn">Confirm booking</button>
+      </div>
+    </div>
+
+    <!-- ---------- PANEL 5 ---------- -->
+    <div class="panel" data-panel="5" hidden>
+      <div class="card card--panel confirm" role="status">
+        <div class="confirm__seal" aria-hidden="true">✓</div>
+        <h3 class="confirm__title">Booking confirmed</h3>
+        <p class="confirm__text">We've emailed the full confirmation to <strong id="cEmail">—</strong>.</p>
+
+        <p class="confirm__ref">Booking reference <strong class="mono" id="cRef">—</strong></p>
+
+        <dl class="review review--center">
+          <div><dt>Stall</dt><dd id="cStall">—</dd></div>
+          <div><dt>Exhibitor</dt><dd id="cName">—</dd></div>
+          <div><dt>Payment method</dt><dd id="cMethod">—</dd></div>
+          <div><dt>Total</dt><dd class="mono" id="cTotal">—</dd></div>
+          <div><dt>Status</dt><dd id="cStatus">—</dd></div>
+        </dl>
+
+        <p class="confirm__note" id="cNote"></p>
+
+        <div class="confirm__actions">
+          <button type="button" class="btn btn--outline" id="printBtn">Print / save receipt</button>
+          <button type="button" class="btn btn--primary" id="againBtn">Book another stall</button>
         </div>
       </div>
-
-      <!-- STEP 4: Confirmation -->
-      <div class="booking-panel confirmation-panel" data-panel="4" style="display:none;">
-        <div class="confirm-check">✓</div>
-        <h3>Booking Confirmed!</h3>
-        <p>Your stall has been reserved. A confirmation email with payment instructions has been sent to <strong id="confEmail"></strong>.</p>
-        <div class="confirm-id">Booking Reference: <strong id="confRef"></strong></div>
-        <div class="confirm-details">
-          <div><span>Stall</span><strong id="confStall"></strong></div>
-          <div><span>Exhibitor</span><strong id="confCompany"></strong></div>
-          <div><span>Total Paid</span><strong id="confTotal"></strong></div>
-        </div>
-        <p class="confirm-note">Please complete payment within 48 hours to secure your stall. Setup access opens 2:00 PM on the first exhibition day.</p>
-        <button class="btn btn-primary" id="newBookingBtn">Book Another Stall</button>
-      </div>
     </div>
   </div>
 </section>
 
-<!-- ===================== EVENT SCHEDULE ===================== -->
-<section class="section schedule" id="schedule">
-  <div class="section-inner">
-    <div class="eyebrow">Event Schedule</div>
-    <h2 class="section-title">What Happens, and When</h2>
+<!-- ===================== SCHEDULE ===================== -->
+<section class="section section--alt" id="schedule">
+  <div class="wrap">
+    <header class="section__head">
+      <p class="eyebrow">Event schedule</p>
+      <h2 class="section__title">What happens, and when</h2>
+    </header>
 
-    <div class="schedule-tabs">
-      <button class="day-tab active" data-day="1">Day 1 — Fri, Dec 12</button>
-      <button class="day-tab" data-day="2">Day 2 — Sat, Dec 13</button>
-      <button class="day-tab" data-day="3">Day 3 — Sun, Dec 14</button>
+    <div class="tabs" role="tablist" aria-label="Exhibition days">
+      <button class="tab is-active" data-day="1" role="tab" aria-selected="true">Day 1 · Fri 12 Dec</button>
+      <button class="tab" data-day="2" role="tab" aria-selected="false">Day 2 · Sat 13 Dec</button>
+      <button class="tab" data-day="3" role="tab" aria-selected="false">Day 3 · Sun 14 Dec</button>
     </div>
 
-    <div class="schedule-list" id="scheduleList"><!-- JS injected --></div>
+    <div id="scheduleList" class="schedule"><!-- rendered by script.js --></div>
   </div>
 </section>
 
-<!-- ===================== FACILITIES & AMENITIES ===================== -->
-<section class="section facilities" id="facilities">
-  <div class="section-inner">
-    <div class="eyebrow">Facilities & Amenities</div>
-    <h2 class="section-title">Everything Your Stall Needs</h2>
+<!-- ===================== FACILITIES ===================== -->
+<section class="section" id="facilities">
+  <div class="wrap">
+    <header class="section__head">
+      <p class="eyebrow">Facilities &amp; amenities</p>
+      <h2 class="section__title">Included with every stall</h2>
+      <p class="section__lede">Every booked stall comes with the following, set up and running before gates open each day.</p>
+    </header>
 
-    <div class="fac-grid">
-      <div class="fac-item"><span>⚡</span>Electricity & Backup Generator</div>
-      <div class="fac-item"><span>💧</span>Water Supply Points</div>
-      <div class="fac-item"><span>🔥</span>Gas Cylinder Stations</div>
-      <div class="fac-item"><span>🧊</span>Cold Storage Facility</div>
-      <div class="fac-item"><span>🪑</span>Tables & Seating on Request</div>
-      <div class="fac-item"><span>🚻</span>Clean Washrooms</div>
-      <div class="fac-item"><span>🅿️</span>Dedicated Parking</div>
-      <div class="fac-item"><span>🛡️</span>24/7 Security Staff</div>
-      <div class="fac-item"><span>🧯</span>Fire Safety Equipment</div>
-      <div class="fac-item"><span>📶</span>Free Wi-Fi Zone</div>
-      <div class="fac-item"><span>🩹</span>First Aid Station</div>
-      <div class="fac-item"><span>🎙️</span>Announcement & Sound System</div>
-    </div>
+    <ul class="facilities">
+      <li>Electricity point with generator backup</li>
+      <li>Running water supply nearby</li>
+      <li>Gas cylinder station (BBQ aisle)</li>
+      <li>Shared cold storage access</li>
+      <li>One table and two chairs</li>
+      <li>Stall signage board with your name</li>
+      <li>Clean washroom blocks</li>
+      <li>Dedicated exhibitor parking</li>
+      <li>24-hour security staff</li>
+      <li>Fire extinguisher at every counter</li>
+      <li>First aid station on ground</li>
+      <li>Public announcement system</li>
+    </ul>
   </div>
 </section>
 
-<!-- ===================== RULES & GUIDELINES ===================== -->
-<section class="section rules" id="rules">
-  <div class="section-inner">
-    <div class="eyebrow">Rules & Guidelines</div>
-    <h2 class="section-title">Exhibitor Guidelines</h2>
+<!-- ===================== RULES ===================== -->
+<section class="section section--alt" id="rules">
+  <div class="wrap">
+    <header class="section__head">
+      <p class="eyebrow">Rules &amp; guidelines</p>
+      <h2 class="section__title">Exhibitor guidelines</h2>
+    </header>
 
-    <div class="rules-grid">
-      <div class="rule-card">
-        <h4>01. Setup & Timing</h4>
-        <p>Stalls must be fully set up by 3:30 PM daily. Exhibitor entry begins at 2:00 PM each day.</p>
-      </div>
-      <div class="rule-card">
-        <h4>02. Food Safety</h4>
-        <p>All food handlers must carry a valid health certificate. Punjab Food Authority checks apply.</p>
-      </div>
-      <div class="rule-card">
-        <h4>03. Stall Boundaries</h4>
-        <p>Displays, signage, and seating must remain within your booked stall dimensions.</p>
-      </div>
-      <div class="rule-card">
-        <h4>04. Power Usage</h4>
-        <p>Only pre-approved appliances are allowed on the electricity connection. Overloading is prohibited.</p>
-      </div>
-      <div class="rule-card">
-        <h4>05. Cancellations</h4>
-        <p>Bookings are refundable up to 7 days before the event, minus a 10% processing fee.</p>
-      </div>
-      <div class="rule-card">
-        <h4>06. Cleanliness</h4>
-        <p>Exhibitors are responsible for waste disposal in designated bins throughout the day.</p>
-      </div>
+    <div class="grid grid--3">
+      <article class="rule"><h3>Setup &amp; timing</h3><p>Stalls must be fully set up by 3:30 PM daily. Exhibitor entry opens at 2:00 PM each day.</p></article>
+      <article class="rule"><h3>Food safety</h3><p>All food handlers must carry a valid health certificate. Punjab Food Authority inspections apply on all three days.</p></article>
+      <article class="rule"><h3>Stall boundaries</h3><p>Displays, signage and seating must stay within your booked stall dimensions. Aisles must remain clear.</p></article>
+      <article class="rule"><h3>Power usage</h3><p>Only pre-approved appliances may run on the stall connection. Overloading the point is not permitted.</p></article>
+      <article class="rule"><h3>Cancellation</h3><p>Bookings are refundable up to 7 days before the event, less a 10% processing deduction.</p></article>
+      <article class="rule"><h3>Cleanliness</h3><p>Exhibitors are responsible for clearing waste into the designated bins throughout the day.</p></article>
     </div>
   </div>
 </section>
 
 <!-- ===================== IMPORTANT DATES ===================== -->
-<section class="section dates">
-  <div class="section-inner">
-    <div class="eyebrow">Important Dates</div>
-    <h2 class="section-title">Key Deadlines</h2>
+<section class="section">
+  <div class="wrap">
+    <header class="section__head">
+      <p class="eyebrow">Important dates</p>
+      <h2 class="section__title">Key deadlines</h2>
+    </header>
 
-    <div class="timeline">
-      <div class="timeline-item">
-        <div class="tl-dot"></div>
-        <div class="tl-content"><strong>1 Nov 2025</strong><span>Stall bookings open</span></div>
-      </div>
-      <div class="timeline-item">
-        <div class="tl-dot"></div>
-        <div class="tl-content"><strong>25 Nov 2025</strong><span>Early-bird pricing ends</span></div>
-      </div>
-      <div class="timeline-item">
-        <div class="tl-dot"></div>
-        <div class="tl-content"><strong>5 Dec 2025</strong><span>Final booking deadline</span></div>
-      </div>
-      <div class="timeline-item">
-        <div class="tl-dot"></div>
-        <div class="tl-content"><strong>10 Dec 2025</strong><span>Exhibitor orientation & badge pickup</span></div>
-      </div>
-      <div class="timeline-item">
-        <div class="tl-dot"></div>
-        <div class="tl-content"><strong>12–14 Dec 2025</strong><span>Zaiqa Mela — Exhibition days</span></div>
-      </div>
-    </div>
+    <ol class="timeline">
+      <li><span class="mono">01 Nov 2025</span><span>Stall bookings open</span></li>
+      <li><span class="mono">25 Nov 2025</span><span>Early-bird pricing ends</span></li>
+      <li><span class="mono">05 Dec 2025</span><span>Final booking deadline</span></li>
+      <li><span class="mono">10 Dec 2025</span><span>Exhibitor orientation &amp; pass collection</span></li>
+      <li class="is-event"><span class="mono">12–14 Dec 2025</span><span>Zaiqa Mela — exhibition days</span></li>
+    </ol>
   </div>
 </section>
 
 <!-- ===================== CONTACT ===================== -->
-<section class="section contact" id="contact">
-  <div class="section-inner">
-    <div class="eyebrow">Contact Information</div>
-    <h2 class="section-title">Need Help With Your Booking?</h2>
+<section class="section section--alt" id="contact">
+  <div class="wrap">
+    <header class="section__head">
+      <p class="eyebrow">Contact</p>
+      <h2 class="section__title">Need help with your booking?</h2>
+    </header>
 
-    <div class="contact-grid">
-      <div class="contact-card">
-        <span class="contact-icon">📞</span>
-        <h4>Call Us</h4>
-        <p>+92 300 1234567<br>+92 42 111 222 333</p>
-      </div>
-      <div class="contact-card">
-        <span class="contact-icon">✉️</span>
-        <h4>Email Us</h4>
-        <p>exhibitors@zaiqamela.pk<br>info@zaiqamela.pk</p>
-      </div>
-      <div class="contact-card">
-        <span class="contact-icon">📍</span>
-        <h4>Visit Us</h4>
-        <p>Al-Hamra Open Air Grounds<br>Gulberg, Lahore, Pakistan</p>
-      </div>
-      <div class="contact-card">
-        <span class="contact-icon">🕒</span>
-        <h4>Office Hours</h4>
-        <p>Mon–Sat, 10 AM – 6 PM<br>(Booking support)</p>
-      </div>
+    <div class="grid grid--4">
+      <article class="card card--info"><h3>Booking helpline</h3><p class="card__value">+92 300 1234567</p><p class="card__sub">Mon–Sat, 10 AM – 6 PM</p></article>
+      <article class="card card--info"><h3>Exhibitor email</h3><p class="card__value">exhibitors@zaiqamela.pk</p><p class="card__sub">Replies within one working day</p></article>
+      <article class="card card--info"><h3>Office</h3><p class="card__value">Al-Hamra Grounds</p><p class="card__sub">Gulberg III, Lahore</p></article>
+      <article class="card card--info"><h3>On-ground desk</h3><p class="card__value">Gate 2, help counter</p><p class="card__sub">Open 2 PM – 11 PM during event</p></article>
     </div>
   </div>
 </section>
 
-<!-- ===================== FOOTER ===================== -->
 <footer class="footer">
-  <div class="footer-inner">
-    <div class="footer-brand">
-      <span class="brand-mark">ز</span>
-      <div><strong>Zaiqa Mela</strong><small>Desi Food Exhibition 2025</small></div>
+  <div class="wrap footer__inner">
+    <div class="brand">
+      <span class="brand__mark" aria-hidden="true">ز</span>
+      <span class="brand__text"><strong>Zaiqa Mela</strong><em>Desi Food Exhibition 2025</em></span>
     </div>
-    <p class="footer-copy">© 2025 Zaiqa Mela. All stall bookings subject to Exhibitor Terms & Guidelines.</p>
+    <p>© 2025 Zaiqa Mela. All stall bookings are subject to the exhibitor terms &amp; guidelines.</p>
   </div>
 </footer>
 
-<!-- Toast -->
-<div class="toast" id="toast"></div>
+<!-- Sticky selection bar -->
+<div class="stickybar" id="stickyBar" hidden>
+  <div class="stickybar__inner">
+    <div class="stickybar__text">
+      <span class="stickybar__label">Selected stall</span>
+      <span class="stickybar__value"><strong id="sbStall">—</strong> · <span class="mono" id="sbPrice">—</span></span>
+    </div>
+    <a href="#booking" class="btn btn--primary btn--sm">Continue booking</a>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="script.js"></script>
 </body>
