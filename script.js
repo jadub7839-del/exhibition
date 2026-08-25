@@ -1,423 +1,726 @@
-// ============================================================
-// ZAIQA MELA — Booking System Logic
-// ============================================================
+ /* ============================================================
+   ZAIQA MELA — Booking logic
+   Single source of truth: CATEGORIES + AISLES drive the stall map,
+   the category cards and the hero counters, so nothing can drift.
+   ============================================================ */
+(function () {
+  "use strict";
 
-const CATEGORY_META = {
-  street:   { label: "Street Food",         icon: "🌭", price: 45000, size: "6×6 ft" },
-  bbq:      { label: "BBQ & Grill",         icon: "🍢", price: 65000, size: "8×8 ft" },
-  sweets:   { label: "Desserts & Mithai",   icon: "🍮", price: 40000, size: "6×6 ft" },
-  beverage: { label: "Beverages",           icon: "🥤", price: 30000, size: "4×6 ft" },
-  heritage: { label: "Heritage Restaurant", icon: "🍛", price: 80000, size: "10×10 ft" },
-  bakery:   { label: "Bakery & Confectionery", icon: "🥐", price: 35000, size: "6×6 ft" },
-};
+  /* ---------------- Config ---------------- */
 
-const AISLES = [
-  { name: "Aisle A — Street Food Corner", cat: "street", count: 14 },
-  { name: "Aisle B — BBQ & Grill Zone",   cat: "bbq", count: 11 },
-  { name: "Aisle C — Desserts & Mithai",  cat: "sweets", count: 12 },
-  { name: "Aisle D — Beverages Lane",     cat: "beverage", count: 10 },
-  { name: "Aisle E — Heritage Restaurants", cat: "heritage", count: 8 },
-  { name: "Aisle F — Bakery & Confectionery", cat: "bakery", count: 5 },
-];
+  const SERVICE_FEE_RATE = 0.05;
+  const EXPECTED_VISITORS = 15000;
 
-// Deterministic pseudo-random booked status so layout is stable across renders
-function seededRandom(seed) {
-  let x = Math.sin(seed) * 10000;
-  return x - Math.floor(x);
-}
+  const CATEGORIES = {
+    street:   { name: "Street food",           price: 45000, size: "6 × 6 ft",   colour: "#D9663A", desc: "Golgappay, chaat, rolls and fries. Compact high-turnover counters placed nearest the main entrance." },
+    bbq:      { name: "BBQ & grill",           price: 65000, size: "8 × 8 ft",   colour: "#C1440E", desc: "Seekh kebab, tikka and malai boti counters with dedicated ventilation and a gas cylinder point." },
+    sweets:   { name: "Desserts & mithai",     price: 40000, size: "6 × 6 ft",   colour: "#E9A13B", desc: "Kheer, halwa, jalebi and kulfi, with chilled storage access for anything perishable." },
+    beverage: { name: "Beverages",             price: 30000, size: "4 × 6 ft",   colour: "#69AC7B", desc: "Lassi, doodh soda, kashmiri chai and fresh juice. Compact counters spread across every aisle." },
+    heritage: { name: "Heritage restaurants",  price: 80000, size: "10 × 10 ft", colour: "#4A8F5C", desc: "Extended sit-down stalls for established kitchens: biryani, karahi and nihari specialists." },
+    bakery:   { name: "Bakery & confectionery",price: 35000, size: "6 × 6 ft",   colour: "#C77E1E", desc: "Naan-khatai, rusk, cakes and artisan breads, with display-led stall frontage." }
+  };
 
-let stalls = [];
-let stallCounter = 0;
-AISLES.forEach((aisle, aisleIdx) => {
-  for (let i = 1; i <= aisle.count; i++) {
-    stallCounter++;
-    const letter = String.fromCharCode(65 + aisleIdx);
-    const id = `${letter}-${String(i).padStart(2, "0")}`;
-    const isBooked = seededRandom(stallCounter * 7.13) < 0.55;
-    stalls.push({
-      id,
-      aisle: aisle.name,
-      aisleIdx,
-      cat: aisle.cat,
-      booked: isBooked,
+  const AISLES = [
+    { letter: "A", label: "Aisle A — Street food corner",        cat: "street",   count: 28 },
+    { letter: "B", label: "Aisle B — BBQ & grill zone",          cat: "bbq",      count: 22 },
+    { letter: "C", label: "Aisle C — Desserts & mithai",         cat: "sweets",   count: 24 },
+    { letter: "D", label: "Aisle D — Beverages lane",            cat: "beverage", count: 20 },
+    { letter: "E", label: "Aisle E — Heritage restaurants",      cat: "heritage", count: 16 },
+    { letter: "F", label: "Aisle F — Bakery & confectionery",    cat: "bakery",   count: 10 }
+  ];
+
+  const PAYMENT_METHODS = {
+    bank: {
+      label: "Bank transfer",
+      needsRef: true,
+      title: "Bank transfer details",
+      rows: [["Account title", "Zaiqa Mela Exhibitions"], ["Bank", "Meezan Bank, Gulberg"], ["Account no.", "0102-0110-1234-56"], ["IBAN", "PK36MEZN0001021234567"]],
+      note: "Your stall is reserved once the transfer is verified, usually within one working day."
+    },
+    jazzcash: {
+      label: "JazzCash",
+      needsRef: true,
+      title: "JazzCash details",
+      rows: [["Account title", "Zaiqa Mela Exhibitions"], ["Mobile account", "0300-1234567"]],
+      note: "Your stall is reserved once the transfer is verified, usually within one working day."
+    },
+    easypaisa: {
+      label: "EasyPaisa",
+      needsRef: true,
+      title: "EasyPaisa details",
+      rows: [["Account title", "Zaiqa Mela Exhibitions"], ["Mobile account", "0345-1234567"]],
+      note: "Your stall is reserved once the transfer is verified, usually within one working day."
+    },
+    card: {
+      label: "Credit / debit card",
+      needsRef: false,
+      title: "Card payment",
+      rows: [["Gateway", "1LINK secure checkout"], ["Accepted", "Visa, Mastercard, PayPak"]],
+      note: "You'll be taken to the secure payment gateway to complete the transaction."
+    },
+    cash: {
+      label: "Cash at exhibition office",
+      needsRef: false,
+      title: "Pay in person",
+      rows: [["Office", "Al-Hamra Grounds, Gate 2"], ["Open", "Mon–Sat, 10 AM – 6 PM"]],
+      note: "Bring your booking reference. Unpaid bookings are released after 48 hours."
+    }
+  };
+
+  const SCHEDULE = {
+    1: [
+      { time: "2:00 PM",  title: "Exhibitor setup opens",   desc: "Stall setup, decor and equipment installation." },
+      { time: "4:00 PM",  title: "Gates open to public",    desc: "Visitors welcomed with a live dhol performance." },
+      { time: "5:30 PM",  title: "Opening ceremony",        desc: "Ribbon cutting by the guest of honour at the main stage." },
+      { time: "7:00 PM",  title: "Qawwali night",           desc: "Live performance beside the central food court." },
+      { time: "11:00 PM", title: "Day 1 closes",            desc: "Stalls wind down and security takes handover." }
+    ],
+    2: [
+      { time: "2:00 PM",  title: "Exhibitor entry",         desc: "Restocking and stall refresh window." },
+      { time: "4:00 PM",  title: "Gates open",              desc: "Family hour with a kids' activity corner." },
+      { time: "6:00 PM",  title: "Best stall judging",      desc: "The panel tours all six aisles." },
+      { time: "8:30 PM",  title: "Folk music set",          desc: "Traditional performances on the main stage." },
+      { time: "11:00 PM", title: "Day 2 closes",            desc: "Nightly cleanup and inventory check." }
+    ],
+    3: [
+      { time: "2:00 PM",  title: "Final day setup",         desc: "Last restock before the closing weekend rush." },
+      { time: "4:00 PM",  title: "Gates open",              desc: "Extended family and food-media hour." },
+      { time: "7:00 PM",  title: "Award ceremony",          desc: "Best stall, people's choice and most innovative." },
+      { time: "9:00 PM",  title: "Closing performance",     desc: "Grand finale live act on the main stage." },
+      { time: "11:00 PM", title: "Exhibition ends",         desc: "Teardown begins after the closing announcement." }
+    ]
+  };
+
+  /* ---------------- Helpers ---------------- */
+
+  const $  = (sel, root) => (root || document).querySelector(sel);
+  const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+
+  const money = n => "PKR " + Math.round(n).toLocaleString("en-PK");
+
+  // deterministic booked/available so the map is stable across reloads
+  function seeded(n) {
+    const x = Math.sin(n * 12.9898) * 43758.5453;
+    return x - Math.floor(x);
+  }
+
+  /* ---------------- Stall data ---------------- */
+
+  const stalls = [];
+  let seed = 0;
+  AISLES.forEach(aisle => {
+    for (let i = 1; i <= aisle.count; i++) {
+      seed++;
+      stalls.push({
+        id: aisle.letter + "-" + String(i).padStart(2, "0"),
+        cat: aisle.cat,
+        aisleLabel: aisle.label,
+        aisleShort: "Aisle " + aisle.letter,
+        booked: seeded(seed) < 0.56
+      });
+    }
+  });
+
+  /* ---------------- State ---------------- */
+
+  const state = {
+    stall: null,
+    step: 1,
+    method: null,
+    details: {}
+  };
+
+  /* ---------------- Render: categories ---------------- */
+
+  function renderCategories() {
+    const grid = $("#categoryGrid");
+    if (!grid) return;
+    grid.innerHTML = AISLES.map(aisle => {
+      const c = CATEGORIES[aisle.cat];
+      return `
+        <article class="cat">
+          <div class="cat__bar" style="background:${c.colour}"></div>
+          <h3 class="cat__name">${c.name}</h3>
+          <p class="cat__desc">${c.desc}</p>
+          <div class="cat__foot">
+            <span class="cat__price">${money(c.price)}</span>
+            <span class="cat__spec">${c.size}<br>${aisle.count} stalls</span>
+          </div>
+        </article>`;
+    }).join("");
+  }
+
+  /* ---------------- Render: floor plan ---------------- */
+
+  let filter = "all";
+
+  function renderFloor() {
+    const grid = $("#floorGrid");
+    if (!grid) return;
+
+    const visibleAisles = AISLES.filter(a => filter === "all" || a.cat === filter);
+
+    grid.innerHTML = visibleAisles.map(aisle => {
+      const rows = stalls.filter(s => s.cat === aisle.cat);
+      const free = rows.filter(s => !s.booked).length;
+
+      const tiles = rows.map(s => {
+        let cls = s.booked ? "stall stall--booked" : "stall stall--available";
+        if (state.stall && state.stall.id === s.id) cls = "stall stall--selected";
+        const label = `Stall ${s.id}, ${CATEGORIES[s.cat].name}, ${s.booked ? "already booked" : "available"}`;
+        return `<button type="button" class="${cls}" data-stall="${s.id}"
+                  ${s.booked ? 'disabled aria-disabled="true"' : ""}
+                  aria-label="${label}">${s.id}</button>`;
+      }).join("");
+
+      return `
+        <section class="aisle">
+          <div class="aisle__head">
+            <h3 class="aisle__name">${aisle.label}</h3>
+            <span class="aisle__count">${free} of ${rows.length} free</span>
+          </div>
+          <div class="aisle__stalls">${tiles}</div>
+        </section>`;
+    }).join("");
+  }
+
+  /* ---------------- Render: stats ---------------- */
+
+  let statsPainted = false;
+
+  function renderStats() {
+    const total = stalls.length;
+    const booked = stalls.filter(s => s.booked).length;
+
+    // Count up on first paint only. Later updates (a stall just got booked)
+    // must land instantly — re-animating from zero reads as a glitch.
+    const animate = !statsPainted;
+    setCount($("#statTotal"), total, animate);
+    setCount($("#statBooked"), booked, animate);
+    setCount($("#statAvailable"), total - booked, animate);
+    setCount($("#statVisitors"), EXPECTED_VISITORS, animate);
+    statsPainted = true;
+
+    const about = $("#aboutStallCount");
+    if (about) about.textContent = total + " stalls";
+  }
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function setCount(el, target, animate) {
+    if (!el) return;
+    if (!animate || reduceMotion) { el.textContent = target.toLocaleString("en-PK"); return; }
+    const dur = 1100, t0 = performance.now();
+    (function tick(now) {
+      const p = Math.min((now - t0) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(eased * target).toLocaleString("en-PK");
+      if (p < 1) requestAnimationFrame(tick);
+    })(t0);
+  }
+
+  /* ---------------- Modal ---------------- */
+
+  const modal = $("#stallModal");
+  let pending = null;
+  let lastFocused = null;
+
+  function openModal(stall) {
+    pending = stall;
+    const c = CATEGORIES[stall.cat];
+    $("#mCategory").textContent = c.name;
+    $("#mStallNo").textContent = "Stall " + stall.id;
+    $("#mSize").textContent = c.size;
+    $("#mAisle").textContent = stall.aisleShort;
+    $("#mPrice").textContent = money(c.price);
+    lastFocused = document.activeElement;
+    modal.hidden = false;
+    $("#mSelect").focus();
+  }
+
+  function closeModal() {
+    modal.hidden = true;
+    pending = null;
+    if (lastFocused && lastFocused.isConnected) lastFocused.focus();
+  }
+
+  /* ---------------- Selection ---------------- */
+
+  function selectStall(stall) {
+    state.stall = stall;
+    renderFloor();
+    renderSelection();
+    updateStickyBar();
+    toast("Stall " + stall.id + " selected", "success");
+  }
+
+  function renderSelection() {
+    const empty = $("#panelEmpty");
+    const picked = $("#panelPicked");
+    const go2 = $("#go2");
+    const locked = $("#stallLocked");
+
+    if (!state.stall) {
+      empty.hidden = false;
+      picked.hidden = true;
+      go2.disabled = true;
+      locked.value = "—";
+      return;
+    }
+
+    const c = CATEGORIES[state.stall.cat];
+    empty.hidden = true;
+    picked.hidden = false;
+    go2.disabled = false;
+
+    $("#pCategory").textContent = c.name;
+    $("#pStallNo").textContent = "Stall " + state.stall.id;
+    $("#pSize").textContent = c.size;
+    $("#pAisle").textContent = state.stall.aisleShort;
+    $("#pPrice").textContent = money(c.price);
+
+    locked.value = "Stall " + state.stall.id + " — " + c.name;
+  }
+
+  function updateStickyBar() {
+    const bar = $("#stickyBar");
+    // Only while they're still on the map step — once they're inside the
+    // form it stops being a prompt and starts being an obstruction.
+    const show = state.stall && state.step === 1;
+    bar.hidden = !show;
+    document.body.classList.toggle("has-sticky", !!show);
+    if (show) {
+      $("#sbStall").textContent = "Stall " + state.stall.id;
+      $("#sbPrice").textContent = money(CATEGORIES[state.stall.cat].price);
+    }
+  }
+
+  /* ---------------- Totals ---------------- */
+
+  function totals() {
+    if (!state.stall) return { base: 0, fee: 0, total: 0 };
+    const base = CATEGORIES[state.stall.cat].price;
+    const fee = Math.round(base * SERVICE_FEE_RATE);
+    return { base, fee, total: base + fee };
+  }
+
+  function renderPaymentSummary() {
+    const t = totals();
+    const c = state.stall ? CATEGORIES[state.stall.cat] : null;
+    $("#payStallLabel").textContent = state.stall
+      ? `Stall ${state.stall.id} · ${c.name} — three-day slot`
+      : "Stall — three-day slot";
+    $("#payBase").textContent = money(t.base);
+    $("#payFee").textContent = money(t.fee);
+    $("#payTotal").textContent = money(t.total);
+  }
+
+  /* ---------------- Steps ---------------- */
+
+  function goStep(n, scroll) {
+    state.step = n;
+    $$(".panel").forEach(p => { p.hidden = Number(p.dataset.panel) !== n; });
+    $$(".step").forEach(s => {
+      const i = Number(s.dataset.step);
+      s.classList.toggle("is-active", i === n);
+      s.classList.toggle("is-done", i < n);
     });
+    updateStickyBar();
+    if (scroll !== false) {
+      const top = $("#booking").getBoundingClientRect().top + window.scrollY - 90;
+      window.scrollTo({ top, behavior: reduceMotion ? "auto" : "smooth" });
+    }
   }
-});
 
-let selectedStall = null;
-let activeFilter = "all";
+  /* ---------------- Validation ---------------- */
 
-// ---------- Render Floor Grid ----------
-const floorGrid = document.getElementById("floorGrid");
+  function showError(name, message) {
+    const err = $(`.err[data-err="${name}"]`);
+    if (err) {
+      err.textContent = message || "";
+      err.classList.toggle("is-shown", !!message);
+    }
+    const input = $("#" + name);
+    if (input && input.closest(".field")) {
+      input.closest(".field").classList.toggle("has-error", !!message);
+    }
+  }
 
-function renderFloorGrid() {
-  floorGrid.innerHTML = "";
-  let currentAisleIdx = -1;
+  function clearErrors(names) {
+    names.forEach(n => showError(n, ""));
+  }
 
-  stalls.forEach(stall => {
-    if (stall.aisleIdx !== currentAisleIdx) {
-      currentAisleIdx = stall.aisleIdx;
-      const label = document.createElement("div");
-      label.className = "aisle-label";
-      label.textContent = stall.aisle;
-      floorGrid.appendChild(label);
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
+
+  function validateDetails() {
+    const f = {
+      fullName: $("#fullName").value.trim(),
+      cnic:     $("#cnic").value.trim(),
+      mobile:   $("#mobile").value.trim(),
+      email:    $("#email").value.trim(),
+      address:  $("#address").value.trim(),
+      city:     $("#city").value.trim()
+    };
+    let firstBad = null;
+    const fail = (name, msg) => { showError(name, msg); if (!firstBad) firstBad = name; };
+
+    if (!f.fullName) fail("fullName", "Enter your full name.");
+    else if (f.fullName.length < 3) fail("fullName", "Full name must be at least 3 characters.");
+    else if (!/^[A-Za-z\u0600-\u06FF\s.'-]+$/.test(f.fullName)) fail("fullName", "Use letters only — no digits or symbols.");
+    else showError("fullName", "");
+
+    if (!f.cnic) fail("cnic", "Enter your CNIC number.");
+    else if (!/^\d{5}-\d{7}-\d$/.test(f.cnic)) fail("cnic", "CNIC must be 13 digits, like 35202-1234567-1.");
+    else showError("cnic", "");
+
+    if (!f.mobile) fail("mobile", "Enter your mobile number.");
+    else if (!/^03\d{2}-\d{7}$/.test(f.mobile)) fail("mobile", "Use a Pakistani mobile number, like 0300-1234567.");
+    else showError("mobile", "");
+
+    if (!f.email) fail("email", "Enter your email address.");
+    else if (!EMAIL_RE.test(f.email)) fail("email", "That email address doesn't look right.");
+    else showError("email", "");
+
+    if (!f.address) fail("address", "Enter your complete address.");
+    else if (f.address.length < 10) fail("address", "Add a bit more detail — street and area help us reach you.");
+    else showError("address", "");
+
+    if (!f.city) fail("city", "Enter your city.");
+    else if (!/^[A-Za-z\u0600-\u06FF\s.'-]{2,}$/.test(f.city)) fail("city", "Enter a valid city name.");
+    else showError("city", "");
+
+    if (firstBad) {
+      const el = $("#" + firstBad);
+      if (el) { el.focus({ preventScroll: true }); el.scrollIntoView({ block: "center", behavior: reduceMotion ? "auto" : "smooth" }); }
+      toast("Please correct the highlighted fields", "error");
+      return false;
     }
 
-    const el = document.createElement("div");
-    const meta = CATEGORY_META[stall.cat];
-    let statusClass = stall.booked ? "booked" : "available";
-    if (selectedStall && selectedStall.id === stall.id) statusClass = "selected";
-
-    el.className = `stall ${statusClass}`;
-    if (activeFilter !== "all" && stall.cat !== activeFilter) el.classList.add("hidden-cat");
-    el.textContent = stall.id;
-    el.setAttribute("aria-label", `Stall ${stall.id}, ${meta.label}, ${stall.booked ? "booked" : "available"}`);
-
-    if (!stall.booked) {
-      el.addEventListener("click", () => openStallDetail(stall));
-    }
-    floorGrid.appendChild(el);
-  });
-}
-renderFloorGrid();
-
-// ---------- Filters ----------
-document.querySelectorAll(".filter-chip").forEach(chip => {
-  chip.addEventListener("click", () => {
-    document.querySelectorAll(".filter-chip").forEach(c => c.classList.remove("active"));
-    chip.classList.add("active");
-    activeFilter = chip.dataset.filter;
-    renderFloorGrid();
-  });
-});
-
-// ---------- Stall Detail Popover ----------
-const stallDetail = document.getElementById("stallDetail");
-let pendingStall = null;
-
-function openStallDetail(stall) {
-  pendingStall = stall;
-  const meta = CATEGORY_META[stall.cat];
-  document.getElementById("detailIcon").textContent = meta.icon;
-  document.getElementById("detailCat").textContent = meta.label;
-  document.getElementById("detailNumber").textContent = `Stall ${stall.id}`;
-  document.getElementById("detailSize").textContent = meta.size;
-  document.getElementById("detailAisle").textContent = stall.aisle.split("—")[0].trim();
-  document.getElementById("detailPrice").textContent = `PKR ${meta.price.toLocaleString()}`;
-  stallDetail.classList.add("open");
-}
-
-document.getElementById("detailClose").addEventListener("click", () => stallDetail.classList.remove("open"));
-stallDetail.addEventListener("click", e => { if (e.target === stallDetail) stallDetail.classList.remove("open"); });
-
-document.getElementById("selectStallBtn").addEventListener("click", () => {
-  if (!pendingStall) return;
-  selectedStall = pendingStall;
-  stallDetail.classList.remove("open");
-  renderFloorGrid();
-  updateSelectedStallCard();
-  showToast(`Stall ${selectedStall.id} selected`, "success");
-  document.getElementById("booking").scrollIntoView({ behavior: "smooth", block: "start" });
-});
-
-// ---------- Selected Stall Card (Step 1) ----------
-function updateSelectedStallCard() {
-  const emptyEl = document.getElementById("emptySelection");
-  const filledEl = document.getElementById("filledSelection");
-  const toStep2Btn = document.getElementById("toStep2");
-
-  if (!selectedStall) {
-    emptyEl.style.display = "block";
-    filledEl.style.display = "none";
-    toStep2Btn.disabled = true;
-    return;
+    f.notes = $("#notes").value.trim();
+    state.details = f;
+    return true;
   }
-  const meta = CATEGORY_META[selectedStall.cat];
-  emptyEl.style.display = "none";
-  filledEl.style.display = "flex";
-  toStep2Btn.disabled = false;
 
-  document.getElementById("filledIcon").textContent = meta.icon;
-  document.getElementById("filledCat").textContent = meta.label;
-  document.getElementById("filledNumber").textContent = `Stall ${selectedStall.id}`;
-  document.getElementById("filledSize").textContent = meta.size;
-  document.getElementById("filledAisle").textContent = selectedStall.aisle.split("—")[0].trim();
-  document.getElementById("filledPrice").textContent = `PKR ${meta.price.toLocaleString()}`;
-}
+  function validatePayment() {
+    if (!state.method) {
+      showError("method", "Choose how you'd like to pay.");
+      toast("Choose a payment method", "error");
+      $("#methods").scrollIntoView({ block: "center", behavior: reduceMotion ? "auto" : "smooth" });
+      return false;
+    }
+    showError("method", "");
 
-document.getElementById("changeStallBtn").addEventListener("click", () => {
-  document.getElementById("floorplan").scrollIntoView({ behavior: "smooth", block: "start" });
-});
+    if (PAYMENT_METHODS[state.method].needsRef) {
+      const ref = $("#txnRef").value.trim();
+      if (!ref) {
+        showError("txnRef", "Enter the reference from your transfer receipt.");
+        $("#txnRef").focus({ preventScroll: true });
+        toast("Payment reference is required", "error");
+        return false;
+      }
+      if (ref.length < 5) {
+        showError("txnRef", "Reference looks too short — check your receipt.");
+        $("#txnRef").focus({ preventScroll: true });
+        return false;
+      }
+      showError("txnRef", "");
+      state.details.txnRef = ref;
+    } else {
+      delete state.details.txnRef;
+    }
+    return true;
+  }
 
-// ---------- Stepper Navigation ----------
-const panels = document.querySelectorAll(".booking-panel");
-const steps = document.querySelectorAll(".step");
+  /* ---------------- Review ---------------- */
 
-function goToStep(n) {
-  panels.forEach(p => p.style.display = (Number(p.dataset.panel) === n) ? "block" : "none");
-  steps.forEach(s => {
-    const sn = Number(s.dataset.step);
-    s.classList.toggle("active", sn === n);
-    s.classList.toggle("done", sn < n);
-  });
-}
+  function renderReview() {
+    const c = CATEGORIES[state.stall.cat];
+    const t = totals();
+    const d = state.details;
 
-document.getElementById("toStep2").addEventListener("click", () => {
-  if (!selectedStall) return;
-  goToStep(2);
-});
-document.getElementById("backTo1").addEventListener("click", () => goToStep(1));
-document.getElementById("backTo2").addEventListener("click", () => goToStep(2));
+    $("#rStall").textContent = "Stall " + state.stall.id;
+    $("#rCategory").textContent = c.name;
+    $("#rSize").textContent = c.size;
+    $("#rAisle").textContent = state.stall.aisleShort;
 
-// ---------- Form Validation ----------
-const form = document.getElementById("bookingForm");
+    $("#rName").textContent = d.fullName;
+    $("#rCnic").textContent = d.cnic;
+    $("#rMobile").textContent = d.mobile;
+    $("#rEmail").textContent = d.email;
+    $("#rAddress").textContent = d.address;
+    $("#rCity").textContent = d.city;
 
-function setFieldError(field, message) {
-  const errEl = field.parentElement.querySelector(".error-msg");
-  if (message) {
-    field.classList.add("invalid");
-    if (errEl) errEl.textContent = message;
+    const notesRow = $("#rNotesRow");
+    notesRow.hidden = !d.notes;
+    if (d.notes) $("#rNotes").textContent = d.notes;
+
+    $("#rMethod").textContent = PAYMENT_METHODS[state.method].label;
+    const refRow = $("#rRefRow");
+    refRow.hidden = !d.txnRef;
+    if (d.txnRef) $("#rRef").textContent = d.txnRef;
+
+    $("#rBase").textContent = money(t.base);
+    $("#rFee").textContent = money(t.fee);
+    $("#rTotal").textContent = money(t.total);
+  }
+
+  /* ---------------- Confirmation ---------------- */
+
+  function confirmBooking() {
+    const agree = $("#agree");
+    if (!agree.checked) {
+      showError("agree", "Please confirm your details and accept the guidelines.");
+      agree.closest(".agree").classList.add("has-error");
+      agree.focus({ preventScroll: true });
+      return;
+    }
+    showError("agree", "");
+    agree.closest(".agree").classList.remove("has-error");
+
+    const t = totals();
+    const c = CATEGORIES[state.stall.cat];
+    const d = state.details;
+    const m = PAYMENT_METHODS[state.method];
+    const ref = "ZM25-" + state.stall.id.replace("-", "") + "-" +
+                Math.random().toString(36).slice(2, 6).toUpperCase();
+
+    $("#cEmail").textContent = d.email;
+    $("#cRef").textContent = ref;
+    $("#cStall").textContent = "Stall " + state.stall.id + " · " + c.name;
+    $("#cName").textContent = d.fullName;
+    $("#cMethod").textContent = m.label;
+    $("#cTotal").textContent = money(t.total);
+    $("#cStatus").textContent = m.needsRef ? "Payment under verification" : "Awaiting payment";
+    $("#cNote").textContent = m.note;
+
+    // mark it booked so it can't be double-sold
+    state.stall.booked = true;
+    renderFloor();
+    renderStats();
+
+    goStep(5);
+    toast("Booking confirmed", "success");
+  }
+
+  function resetBooking() {
+    state.stall = null;
+    state.method = null;
+    state.details = {};
+
+    $("#detailsForm").reset();
+    $("#txnRef").value = "";
+    $("#agree").checked = false;
+    $("#agree").closest(".agree").classList.remove("has-error");
+    $("#notesCount").textContent = "0";
+    $$(".err").forEach(e => { e.textContent = ""; e.classList.remove("is-shown"); });
+    $$(".field").forEach(f => f.classList.remove("has-error"));
+    $$('input[name="method"]').forEach(r => { r.checked = false; });
+    $("#payInfo").hidden = true;
+    $("#refField").hidden = true;
+
+    renderSelection();
+    renderFloor();
+    goStep(1, false);
+
+    const top = $("#floorplan").getBoundingClientRect().top + window.scrollY - 90;
+    window.scrollTo({ top, behavior: reduceMotion ? "auto" : "smooth" });
+  }
+
+  /* ---------------- Schedule ---------------- */
+
+  function renderSchedule(day) {
+    const list = $("#scheduleList");
+    if (!list) return;
+    list.innerHTML = SCHEDULE[day].map(i => `
+      <article class="sched">
+        <span class="sched__time">${i.time}</span>
+        <div>
+          <p class="sched__title">${i.title}</p>
+          <p class="sched__desc">${i.desc}</p>
+        </div>
+      </article>`).join("");
+  }
+
+  /* ---------------- Toast ---------------- */
+
+  let toastTimer;
+  function toast(msg, kind) {
+    const el = $("#toast");
+    el.textContent = msg;
+    el.className = "toast is-shown" + (kind ? " is-" + kind : "");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("is-shown"), 3000);
+  }
+
+  /* ---------------- Input masks ---------------- */
+
+  function maskCnic(e) {
+    const digits = e.target.value.replace(/\D/g, "").slice(0, 13);
+    let out = digits;
+    if (digits.length > 5)  out = digits.slice(0, 5) + "-" + digits.slice(5);
+    if (digits.length > 12) out = digits.slice(0, 5) + "-" + digits.slice(5, 12) + "-" + digits.slice(12);
+    e.target.value = out;
+  }
+
+  function maskMobile(e) {
+    const digits = e.target.value.replace(/\D/g, "").slice(0, 11);
+    e.target.value = digits.length > 4 ? digits.slice(0, 4) + "-" + digits.slice(4) : digits;
+  }
+
+  /* ---------------- Wiring ---------------- */
+
+  function init() {
+    renderCategories();
+    renderFloor();
+    renderStats();
+    renderSchedule(1);
+    renderSelection();
+
+    // stall clicks (delegated — survives re-render)
+    $("#floorGrid").addEventListener("click", e => {
+      const btn = e.target.closest(".stall");
+      if (!btn || btn.disabled) return;
+      const stall = stalls.find(s => s.id === btn.dataset.stall);
+      if (stall) openModal(stall);
+    });
+
+    // filters
+    $$(".filter").forEach(btn => {
+      btn.addEventListener("click", () => {
+        $$(".filter").forEach(b => { b.classList.remove("is-active"); b.setAttribute("aria-pressed", "false"); });
+        btn.classList.add("is-active");
+        btn.setAttribute("aria-pressed", "true");
+        filter = btn.dataset.filter;
+        renderFloor();
+      });
+    });
+
+    // modal
+    $("#modalClose").addEventListener("click", closeModal);
+    modal.addEventListener("click", e => { if (e.target === modal) closeModal(); });
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape" && !modal.hidden) closeModal();
+    });
+    $("#mSelect").addEventListener("click", () => {
+      if (!pending) return;
+      const stall = pending;
+      closeModal();
+      selectStall(stall);
+    });
+
+    $("#changeStall").addEventListener("click", () => {
+      const top = $("#floorplan").getBoundingClientRect().top + window.scrollY - 90;
+      window.scrollTo({ top, behavior: reduceMotion ? "auto" : "smooth" });
+    });
+
+    // step navigation
+    $("#go2").addEventListener("click", () => { if (state.stall) goStep(2); });
+
+    $("#go3").addEventListener("click", () => {
+      if (!validateDetails()) return;
+      renderPaymentSummary();
+      goStep(3);
+    });
+
+    $("#go4").addEventListener("click", () => {
+      if (!validatePayment()) return;
+      renderReview();
+      goStep(4);
+    });
+
+    $$("[data-back]").forEach(btn => {
+      btn.addEventListener("click", () => goStep(Number(btn.dataset.back)));
+    });
+
+    $("#confirmBtn").addEventListener("click", confirmBooking);
+    $("#againBtn").addEventListener("click", resetBooking);
+    $("#printBtn").addEventListener("click", () => window.print());
+
+    // payment method
+    $$('input[name="method"]').forEach(radio => {
+      radio.addEventListener("change", () => {
+        state.method = radio.value;
+        showError("method", "");
+        const m = PAYMENT_METHODS[state.method];
+
+        $("#payInfoTitle").textContent = m.title;
+        $("#payInfoList").innerHTML = m.rows
+          .map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
+        $("#payInfo").hidden = false;
+
+        $("#refField").hidden = !m.needsRef;
+        if (!m.needsRef) { $("#txnRef").value = ""; showError("txnRef", ""); }
+      });
+    });
+
+    // live error clearing
+    ["fullName", "cnic", "mobile", "email", "address", "city", "txnRef"].forEach(id => {
+      const el = $("#" + id);
+      if (el) el.addEventListener("input", () => showError(id, ""));
+    });
+
+    $("#agree").addEventListener("change", e => {
+      if (e.target.checked) {
+        showError("agree", "");
+        e.target.closest(".agree").classList.remove("has-error");
+      }
+    });
+
+    // masks + counter
+    $("#cnic").addEventListener("input", maskCnic);
+    $("#mobile").addEventListener("input", maskMobile);
+    $("#notes").addEventListener("input", e => {
+      $("#notesCount").textContent = e.target.value.length;
+    });
+
+    // schedule tabs
+    $$(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        $$(".tab").forEach(t => { t.classList.remove("is-active"); t.setAttribute("aria-selected", "false"); });
+        tab.classList.add("is-active");
+        tab.setAttribute("aria-selected", "true");
+        renderSchedule(tab.dataset.day);
+      });
+    });
+
+    // mobile nav
+    const toggle = $("#navToggle");
+    const links = $("#navLinks");
+    toggle.addEventListener("click", () => {
+      const open = links.classList.toggle("is-open");
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    });
+    $$("#navLinks a").forEach(a => a.addEventListener("click", () => {
+      links.classList.remove("is-open");
+      toggle.setAttribute("aria-expanded", "false");
+      toggle.setAttribute("aria-label", "Open menu");
+    }));
+
+    // reveal on scroll
+    if (!reduceMotion && "IntersectionObserver" in window) {
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = "1";
+            entry.target.style.transform = "none";
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: "0px 0px -40px" });
+
+      $$(".card--info, .cat, .rule, .sched, .timeline li").forEach(el => {
+        el.style.opacity = "0";
+        el.style.transform = "translateY(16px)";
+        el.style.transition = "opacity .6s cubic-bezier(.2,.7,.3,1), transform .6s cubic-bezier(.2,.7,.3,1)";
+        io.observe(el);
+      });
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
   } else {
-    field.classList.remove("invalid");
-    if (errEl) errEl.textContent = "";
+    init();
   }
-}
-
-function validateForm() {
-  let valid = true;
-
-  const companyName = document.getElementById("companyName");
-  if (!companyName.value.trim()) { setFieldError(companyName, "Company name is required."); valid = false; }
-  else setFieldError(companyName, "");
-
-  const contactPerson = document.getElementById("contactPerson");
-  if (!contactPerson.value.trim()) { setFieldError(contactPerson, "Contact person is required."); valid = false; }
-  else setFieldError(contactPerson, "");
-
-  const email = document.getElementById("email");
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!email.value.trim()) { setFieldError(email, "Email address is required."); valid = false; }
-  else if (!emailPattern.test(email.value.trim())) { setFieldError(email, "Enter a valid email address."); valid = false; }
-  else setFieldError(email, "");
-
-  const phone = document.getElementById("phone");
-  const phonePattern = /^[0-9+\-\s]{10,15}$/;
-  if (!phone.value.trim()) { setFieldError(phone, "Phone number is required."); valid = false; }
-  else if (!phonePattern.test(phone.value.trim())) { setFieldError(phone, "Enter a valid phone number."); valid = false; }
-  else setFieldError(phone, "");
-
-  const businessCategory = document.getElementById("businessCategory");
-  if (!businessCategory.value) { setFieldError(businessCategory, "Please select a category."); valid = false; }
-  else setFieldError(businessCategory, "");
-
-  const repCount = document.getElementById("repCount");
-  const repVal = Number(repCount.value);
-  if (!repCount.value || repVal < 1 || repVal > 10) { setFieldError(repCount, "Enter a number between 1 and 10."); valid = false; }
-  else setFieldError(repCount, "");
-
-  const stallType = document.getElementById("stallType");
-  if (!stallType.value) { setFieldError(stallType, "Please select a stall type."); valid = false; }
-  else setFieldError(stallType, "");
-
-  return valid;
-}
-
-// live-clear errors as user types
-["companyName","contactPerson","email","phone","businessCategory","repCount","stallType"].forEach(id => {
-  const el = document.getElementById(id);
-  el.addEventListener("input", () => setFieldError(el, ""));
-  el.addEventListener("change", () => setFieldError(el, ""));
-});
-
-document.getElementById("toStep3").addEventListener("click", () => {
-  if (!validateForm()) {
-    showToast("Please fix the highlighted fields.", "error");
-    const firstInvalid = form.querySelector(".invalid");
-    if (firstInvalid) firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" });
-    return;
-  }
-  populateReview();
-  goToStep(3);
-});
-
-// ---------- Review / Summary ----------
-function getFacilitiesSelected() {
-  return Array.from(document.querySelectorAll('input[name="facility"]:checked')).map(cb => ({
-    label: cb.parentElement.querySelector(".cb-text strong").textContent,
-    price: Number(cb.dataset.price),
-  }));
-}
-
-function populateReview() {
-  const meta = CATEGORY_META[selectedStall.cat];
-  document.getElementById("rvStall").textContent = `Stall ${selectedStall.id}`;
-  document.getElementById("rvCat").textContent = meta.label;
-  document.getElementById("rvSize").textContent = meta.size;
-  document.getElementById("rvBasePrice").textContent = `PKR ${meta.price.toLocaleString()}`;
-
-  document.getElementById("rvCompany").textContent = document.getElementById("companyName").value.trim();
-  document.getElementById("rvContact").textContent = document.getElementById("contactPerson").value.trim();
-  document.getElementById("rvEmail").textContent = document.getElementById("email").value.trim();
-  document.getElementById("rvPhone").textContent = document.getElementById("phone").value.trim();
-  document.getElementById("rvReps").textContent = document.getElementById("repCount").value.trim();
-  const stallTypeSelect = document.getElementById("stallType");
-  document.getElementById("rvStallType").textContent = stallTypeSelect.options[stallTypeSelect.selectedIndex].text;
-
-  const facilities = getFacilitiesSelected();
-  const rvFacilities = document.getElementById("rvFacilities");
-  if (facilities.length === 0) {
-    rvFacilities.innerHTML = '<span class="muted">None selected</span>';
-  } else {
-    rvFacilities.innerHTML = facilities.map(f => `<span>${f.label}</span>`).join("");
-  }
-
-  const facilitiesTotal = facilities.reduce((sum, f) => sum + f.price, 0);
-  const total = meta.price + facilitiesTotal;
-  document.getElementById("rvTotal").textContent = `PKR ${total.toLocaleString()}`;
-}
-
-// ---------- Confirm Booking ----------
-document.getElementById("confirmBooking").addEventListener("click", () => {
-  const agree = document.getElementById("agreeTerms");
-  const agreeError = document.getElementById("agreeError");
-  if (!agree.checked) {
-    agreeError.textContent = "You must agree to the Exhibition Rules & Guidelines to proceed.";
-    agree.closest(".agree-card").style.borderColor = "var(--chili-light)";
-    return;
-  }
-  agreeError.textContent = "";
-
-  const meta = CATEGORY_META[selectedStall.cat];
-  const facilities = getFacilitiesSelected();
-  const facilitiesTotal = facilities.reduce((sum, f) => sum + f.price, 0);
-  const total = meta.price + facilitiesTotal;
-  const ref = "ZM-" + Math.random().toString(36).slice(2, 8).toUpperCase();
-
-  document.getElementById("confEmail").textContent = document.getElementById("email").value.trim();
-  document.getElementById("confRef").textContent = ref;
-  document.getElementById("confStall").textContent = `${selectedStall.id} — ${meta.label}`;
-  document.getElementById("confCompany").textContent = document.getElementById("companyName").value.trim();
-  document.getElementById("confTotal").textContent = `PKR ${total.toLocaleString()}`;
-
-  // Mark stall as booked in the model
-  selectedStall.booked = true;
-
-  goToStep(4);
-  showToast("Booking confirmed! 🎉", "success");
-});
-
-document.getElementById("newBookingBtn").addEventListener("click", () => {
-  form.reset();
-  document.querySelectorAll(".invalid").forEach(el => el.classList.remove("invalid"));
-  document.querySelectorAll(".error-msg").forEach(el => el.textContent = "");
-  document.getElementById("agreeTerms").closest(".agree-card").style.borderColor = "";
-  selectedStall = null;
-  renderFloorGrid();
-  updateSelectedStallCard();
-  goToStep(1);
-  document.getElementById("floorplan").scrollIntoView({ behavior: "smooth", block: "start" });
-});
-
-// ---------- Toast ----------
-let toastTimer = null;
-function showToast(message, type = "") {
-  const toast = document.getElementById("toast");
-  toast.textContent = message;
-  toast.className = "toast show" + (type ? " " + type : "");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove("show"), 3200);
-}
-
-// ---------- Schedule Tabs ----------
-const SCHEDULE = {
-  1: [
-    { time: "2:00 PM", title: "Exhibitor Setup Opens", desc: "Stall setup, decor, and equipment installation." },
-    { time: "4:00 PM", title: "Gates Open to Public", desc: "Visitors welcomed with live dhol performance." },
-    { time: "5:30 PM", title: "Opening Ceremony", desc: "Ribbon cutting by guest of honour." },
-    { time: "7:00 PM", title: "Live Qawwali Night", desc: "Main stage performance near the food court." },
-    { time: "11:00 PM", title: "Day 1 Closes", desc: "Stalls wind down, security handover." },
-  ],
-  2: [
-    { time: "2:00 PM", title: "Exhibitor Entry", desc: "Restocking and stall refresh window." },
-    { time: "4:00 PM", title: "Gates Open", desc: "Family hour with kids' activity corner." },
-    { time: "6:00 PM", title: "Best Stall Judging", desc: "Panel tours all 6 aisles for awards." },
-    { time: "8:30 PM", title: "Folk Music Set", desc: "Live traditional performances on main stage." },
-    { time: "11:00 PM", title: "Day 2 Closes", desc: "Nightly cleanup and inventory check." },
-  ],
-  3: [
-    { time: "2:00 PM", title: "Final Day Setup", desc: "Last restock before closing weekend rush." },
-    { time: "4:00 PM", title: "Gates Open", desc: "Extended family & food-blogger hour." },
-    { time: "7:00 PM", title: "Award Ceremony", desc: "Best Stall, People's Choice & Most Innovative awards." },
-    { time: "9:00 PM", title: "Closing Performance", desc: "Grand finale live act on main stage." },
-    { time: "11:00 PM", title: "Exhibition Ends", desc: "Teardown begins; thank-you announcement." },
-  ],
-};
-
-function renderSchedule(day) {
-  const list = document.getElementById("scheduleList");
-  list.innerHTML = SCHEDULE[day].map(item => `
-    <div class="sched-item">
-      <span class="sched-time">${item.time}</span>
-      <div>
-        <div class="sched-title">${item.title}</div>
-        <div class="sched-desc">${item.desc}</div>
-      </div>
-    </div>
-  `).join("");
-}
-renderSchedule(1);
-
-document.querySelectorAll(".day-tab").forEach(tab => {
-  tab.addEventListener("click", () => {
-    document.querySelectorAll(".day-tab").forEach(t => t.classList.remove("active"));
-    tab.classList.add("active");
-    renderSchedule(tab.dataset.day);
-  });
-});
-
-// ---------- Nav toggle (mobile) ----------
-const navToggle = document.getElementById("navToggle");
-const navLinks = document.querySelector(".nav-links");
-navToggle.addEventListener("click", () => navLinks.classList.toggle("open"));
-document.querySelectorAll(".nav-links a").forEach(a => a.addEventListener("click", () => navLinks.classList.remove("open")));
-
-// ---------- Navbar scroll shadow ----------
-const navbar = document.getElementById("navbar");
-window.addEventListener("scroll", () => {
-  navbar.style.boxShadow = window.scrollY > 20 ? "0 4px 20px rgba(0,0,0,0.3)" : "none";
-});
-
-// ---------- Hero stat count-up ----------
-function animateCount(el, target) {
-  const duration = 1400;
-  const start = performance.now();
-  function tick(now) {
-    const progress = Math.min((now - start) / duration, 1);
-    const eased = 1 - Math.pow(1 - progress, 3);
-    el.textContent = Math.floor(eased * target).toLocaleString();
-    if (progress < 1) requestAnimationFrame(tick);
-    else el.textContent = target.toLocaleString();
-  }
-  requestAnimationFrame(tick);
-}
-document.querySelectorAll(".stat-num").forEach(el => {
-  animateCount(el, Number(el.dataset.count));
-});
-
-// ---------- Scroll reveal ----------
-const revealTargets = document.querySelectorAll(".info-card, .cat-card, .fac-item, .rule-card, .contact-card, .timeline-item");
-revealTargets.forEach(el => el.classList.add("reveal"));
-
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add("in-view");
-      observer.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.15 });
-
-revealTargets.forEach(el => observer.observe(el));
-
-// Initial render
-updateSelectedStallCard();
+})();
