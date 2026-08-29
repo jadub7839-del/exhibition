@@ -8,6 +8,8 @@
 
   /* ---------------- Config ---------------- */
 
+  // Set to 0 to remove the charge entirely — the fee row then hides itself
+  // and the total equals the stall price.
   const SERVICE_FEE_RATE = 0.05;
   const EXPECTED_VISITORS = 15000;
 
@@ -104,7 +106,15 @@
     return x - Math.floor(x);
   }
 
-  /* ---------------- Stall data ---------------- */
+  /* ---------------- Stall data ----------------
+     Every stall carries exactly one status. This array is the single
+     source of truth for availability — nothing else may decide it, and
+     the CSS only ever mirrors what this says.                          */
+
+  const STATUS = {
+    AVAILABLE: "available",   // green  — free to book
+    BOOKED:    "booked"       // red    — taken, by anyone
+  };
 
   const stalls = [];
   let seed = 0;
@@ -116,19 +126,37 @@
         cat: aisle.cat,
         aisleLabel: aisle.label,
         aisleShort: "Aisle " + aisle.letter,
-        booked: seeded(seed) < 0.56
+        status: seeded(seed) < 0.56 ? STATUS.BOOKED : STATUS.AVAILABLE
       });
     }
   });
 
-  /* ---------------- State ---------------- */
+  /* ---------------- State ----------------
+     selectedId is an id, not an object reference — one stall can be
+     selected at a time, so replacing the id is all it takes to release
+     the previous one. myBookings records what THIS user booked; those
+     stalls are BOOKED like any other, we just remember they're theirs. */
 
   const state = {
-    stall: null,
+    selectedId: null,
+    myBookings: [],
     step: 1,
     method: null,
     details: {}
   };
+
+  const getStall   = id => stalls.find(s => s.id === id) || null;
+  const getSelected = () => (state.selectedId ? getStall(state.selectedId) : null);
+  const isMine     = id => state.myBookings.indexOf(id) !== -1;
+
+  /* The ONE place that turns state into a colour.
+     Order matters: booked always wins, so a stall the user just
+     confirmed goes red on the map instead of staying yellow.           */
+  function visualState(stall) {
+    if (stall.status === STATUS.BOOKED) return "booked";              // red
+    if (stall.id === state.selectedId)  return "selected";            // yellow
+    return "available";                                               // green
+  }
 
   /* ---------------- Render: categories ---------------- */
 
@@ -162,15 +190,22 @@
 
     grid.innerHTML = visibleAisles.map(aisle => {
       const rows = stalls.filter(s => s.cat === aisle.cat);
-      const free = rows.filter(s => !s.booked).length;
+      const free = rows.filter(s => s.status === STATUS.AVAILABLE).length;
 
       const tiles = rows.map(s => {
-        let cls = s.booked ? "stall stall--booked" : "stall stall--available";
-        if (state.stall && state.stall.id === s.id) cls = "stall stall--selected";
-        const label = `Stall ${s.id}, ${CATEGORIES[s.cat].name}, ${s.booked ? "already booked" : "available"}`;
-        return `<button type="button" class="${cls}" data-stall="${s.id}"
-                  ${s.booked ? 'disabled aria-disabled="true"' : ""}
-                  aria-label="${label}">${s.id}</button>`;
+        const view = visualState(s);                 // available | booked | selected
+        const mine = isMine(s.id);
+        const spoken = view === "selected" ? "selected by you"
+                     : mine               ? "booked by you"
+                     : view === "booked"  ? "already booked"
+                     : "available";
+        return `<button type="button"
+                  class="stall stall--${view}${mine ? " stall--mine" : ""}"
+                  data-stall="${s.id}"
+                  data-state="${view}"
+                  data-mine="${mine}"
+                  ${view === "booked" ? 'aria-disabled="true"' : ""}
+                  aria-label="Stall ${s.id}, ${CATEGORIES[s.cat].name}, ${spoken}">${s.id}</button>`;
       }).join("");
 
       return `
@@ -190,7 +225,7 @@
 
   function renderStats() {
     const total = stalls.length;
-    const booked = stalls.filter(s => s.booked).length;
+    const booked = stalls.filter(s => s.status === STATUS.BOOKED).length;
 
     // Count up on first paint only. Later updates (a stall just got booked)
     // must land instantly — re-animating from zero reads as a glitch.
@@ -233,6 +268,7 @@
     $("#mSize").textContent = c.size;
     $("#mAisle").textContent = stall.aisleShort;
     $("#mPrice").textContent = money(c.price);
+    $("#mStatus").textContent = "Available";
     lastFocused = document.activeElement;
     modal.hidden = false;
     $("#mSelect").focus();
@@ -247,7 +283,10 @@
   /* ---------------- Selection ---------------- */
 
   function selectStall(stall) {
-    state.stall = stall;
+    if (!stall || stall.status === STATUS.BOOKED) return;   // guard: never select a booked stall
+    // Assigning the id replaces any previous selection, so the stall the
+    // user was on drops straight back to its own status (green).
+    state.selectedId = stall.id;
     renderFloor();
     renderSelection();
     updateStickyBar();
@@ -260,7 +299,8 @@
     const go2 = $("#go2");
     const locked = $("#stallLocked");
 
-    if (!state.stall) {
+    const sel = getSelected();
+    if (!sel) {
       empty.hidden = false;
       picked.hidden = true;
       go2.disabled = true;
@@ -268,51 +308,59 @@
       return;
     }
 
-    const c = CATEGORIES[state.stall.cat];
+    const c = CATEGORIES[sel.cat];
     empty.hidden = true;
     picked.hidden = false;
     go2.disabled = false;
 
     $("#pCategory").textContent = c.name;
-    $("#pStallNo").textContent = "Stall " + state.stall.id;
+    $("#pStallNo").textContent = "Stall " + sel.id;
     $("#pSize").textContent = c.size;
-    $("#pAisle").textContent = state.stall.aisleShort;
+    $("#pAisle").textContent = sel.aisleShort;
     $("#pPrice").textContent = money(c.price);
 
-    locked.value = "Stall " + state.stall.id + " — " + c.name;
+    locked.value = "Stall " + sel.id + " — " + c.name;
   }
 
   function updateStickyBar() {
     const bar = $("#stickyBar");
     // Only while they're still on the map step — once they're inside the
     // form it stops being a prompt and starts being an obstruction.
-    const show = state.stall && state.step === 1;
+    const sel = getSelected();
+    const show = !!sel && state.step === 1;
     bar.hidden = !show;
     document.body.classList.toggle("has-sticky", !!show);
     if (show) {
-      $("#sbStall").textContent = "Stall " + state.stall.id;
-      $("#sbPrice").textContent = money(CATEGORIES[state.stall.cat].price);
+      $("#sbStall").textContent = "Stall " + sel.id;
+      $("#sbPrice").textContent = money(CATEGORIES[sel.cat].price);
     }
   }
 
   /* ---------------- Totals ---------------- */
 
   function totals() {
-    if (!state.stall) return { base: 0, fee: 0, total: 0 };
-    const base = CATEGORIES[state.stall.cat].price;
+    const sel = getSelected();
+    if (!sel) return { base: 0, fee: 0, total: 0 };
+    const base = CATEGORIES[sel.cat].price;
     const fee = Math.round(base * SERVICE_FEE_RATE);
     return { base, fee, total: base + fee };
   }
 
   function renderPaymentSummary() {
     const t = totals();
-    const c = state.stall ? CATEGORIES[state.stall.cat] : null;
-    $("#payStallLabel").textContent = state.stall
-      ? `Stall ${state.stall.id} · ${c.name} — three-day slot`
+    const sel = getSelected();
+    const c = sel ? CATEGORIES[sel.cat] : null;
+    $("#payStallLabel").textContent = sel
+      ? `Stall ${sel.id} · ${c.name} — three-day slot`
       : "Stall — three-day slot";
     $("#payBase").textContent = money(t.base);
     $("#payFee").textContent = money(t.fee);
     $("#payTotal").textContent = money(t.total);
+    $$(".summary__row").forEach(row => {
+      if (row.querySelector("#payFee") || row.querySelector("#rFee")) {
+        row.hidden = SERVICE_FEE_RATE === 0;
+      }
+    });
   }
 
   /* ---------------- Steps ---------------- */
@@ -434,14 +482,15 @@
   /* ---------------- Review ---------------- */
 
   function renderReview() {
-    const c = CATEGORIES[state.stall.cat];
+    const sel = getSelected();
+    const c = CATEGORIES[sel.cat];
     const t = totals();
     const d = state.details;
 
-    $("#rStall").textContent = "Stall " + state.stall.id;
+    $("#rStall").textContent = "Stall " + sel.id;
     $("#rCategory").textContent = c.name;
     $("#rSize").textContent = c.size;
-    $("#rAisle").textContent = state.stall.aisleShort;
+    $("#rAisle").textContent = sel.aisleShort;
 
     $("#rName").textContent = d.fullName;
     $("#rCnic").textContent = d.cnic;
@@ -477,33 +526,41 @@
     showError("agree", "");
     agree.closest(".agree").classList.remove("has-error");
 
+    const sel = getSelected();
+    if (!sel) return;
+
     const t = totals();
-    const c = CATEGORIES[state.stall.cat];
+    const c = CATEGORIES[sel.cat];
     const d = state.details;
     const m = PAYMENT_METHODS[state.method];
-    const ref = "ZM26-" + state.stall.id.replace("-", "") + "-" +
+    const ref = "ZM26-" + sel.id.replace("-", "") + "-" +
                 Math.random().toString(36).slice(2, 6).toUpperCase();
 
     $("#cEmail").textContent = d.email;
     $("#cRef").textContent = ref;
-    $("#cStall").textContent = "Stall " + state.stall.id + " · " + c.name;
+    $("#cStall").textContent = "Stall " + sel.id + " · " + c.name;
     $("#cName").textContent = d.fullName;
     $("#cMethod").textContent = m.label;
     $("#cTotal").textContent = money(t.total);
-    $("#cStatus").textContent = m.needsRef ? "Payment under verification" : "Awaiting payment";
+    $("#cStatus").textContent = m.needsRef ? "Reserved — awaiting payment verification" : "Reserved — awaiting payment";
     $("#cNote").textContent = m.note;
 
-    // mark it booked so it can't be double-sold
-    state.stall.booked = true;
+    // The stall is now taken: it joins every other booked stall (red on the
+    // map, unselectable). We remember it was this user's, so it can still be
+    // identified as theirs without changing what the legend promises.
+    sel.status = STATUS.BOOKED;
+    if (!isMine(sel.id)) state.myBookings.push(sel.id);
+    state.selectedId = null;          // released — nothing is "selected" now
+
     renderFloor();
     renderStats();
 
     goStep(5);
-    toast("Booking confirmed", "success");
+    toast("Stall reserved — save your reference", "success");
   }
 
   function resetBooking() {
-    state.stall = null;
+    state.selectedId = null;          // myBookings is kept: those stalls stay booked
     state.method = null;
     state.details = {};
 
@@ -579,9 +636,18 @@
     // stall clicks (delegated — survives re-render)
     $("#floorGrid").addEventListener("click", e => {
       const btn = e.target.closest(".stall");
-      if (!btn || btn.disabled) return;
+      if (!btn) return;
       const stall = stalls.find(s => s.id === btn.dataset.stall);
-      if (stall) openModal(stall);
+      if (!stall) return;
+      // Booked stalls stay focusable so keyboard users can read them, but
+      // say why nothing happened rather than swallowing the click.
+      if (stall.status === STATUS.BOOKED) {
+        toast(isMine(stall.id)
+          ? "Stall " + stall.id + " is already booked by you"
+          : "Stall " + stall.id + " is already booked", "error");
+        return;
+      }
+      openModal(stall);
     });
 
     // filters
@@ -605,7 +671,7 @@
       if (!pending) return;
       const stall = pending;
       closeModal();
-      selectStall(stall);
+      selectStall(stall);   // selectStall re-checks status before committing
     });
 
     $("#changeStall").addEventListener("click", () => {
@@ -614,7 +680,7 @@
     });
 
     // step navigation
-    $("#go2").addEventListener("click", () => { if (state.stall) goStep(2); });
+    $("#go2").addEventListener("click", () => { if (getSelected()) goStep(2); });
 
     $("#go3").addEventListener("click", () => {
       if (!validateDetails()) return;
@@ -718,9 +784,14 @@
     }
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
+  function boot() {
     init();
+    window.__zaiqaReady = true;   // head guard checks this
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
   }
 })();
