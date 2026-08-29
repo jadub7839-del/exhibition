@@ -481,7 +481,7 @@
     const c = CATEGORIES[state.stall.cat];
     const d = state.details;
     const m = PAYMENT_METHODS[state.method];
-    const ref = "ZM25-" + state.stall.id.replace("-", "") + "-" +
+    const ref = "ZM26-" + state.stall.id.replace("-", "") + "-" +
                 Math.random().toString(36).slice(2, 6).toUpperCase();
 
     $("#cEmail").textContent = d.email;
